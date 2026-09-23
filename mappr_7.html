@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mappr — Recruiting Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#161b27; --s2:#1e2535; --s3:#232d3f;
+  --border:#252d3d; --border2:#2e3a50;
+  --text:#e8edf3; --tm:#9aafc4; --ts:#566980;
+  --accent:#c8d4e0; --adim:#7a92a8;
+  --warm:#4ade80; --warm-bg:rgba(74,222,128,0.08); --warm-b:rgba(74,222,128,0.28);
+  --cont:#f59e0b; --cont-bg:rgba(245,158,11,0.08); --cont-b:rgba(245,158,11,0.28);
+  --blue:#4f8ef7; --blue-bg:rgba(79,142,247,0.1); --blue-b:rgba(79,142,247,0.25);
+  --purple:#a78bfa; --purple-bg:rgba(167,139,250,0.1); --purple-b:rgba(167,139,250,0.25);
+  --gold:#f0b429; --gold-bg:rgba(240,180,41,0.1); --gold-b:rgba(240,180,41,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;z-index:50}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-mark{width:28px;height:28px;background:var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.logo-text{font-family:'Instrument Serif',serif;font-size:17px;letter-spacing:-0.01em}
+.divider{width:1px;height:16px;background:var(--border);margin:0 2px}
+
+.nav-tabs{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px}
+.ntab{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ts);background:none;border:none;padding:5px 12px;border-radius:3px;cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.ntab:hover{color:var(--tm)}
+.ntab.active{background:var(--s2);color:var(--blue)}
+.ntab .badge{background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);font-size:8px;padding:1px 5px;border-radius:8px;font-family:'DM Mono',monospace}
+.ntab.match-tab.active{color:var(--gold)}
+.ntab.match-tab .badge{background:var(--gold-bg);border-color:var(--gold-b);color:var(--gold)}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.stat-pill{display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--border);padding:3px 9px;border-radius:20px;font-family:'DM Mono',monospace;font-size:9px;color:var(--tm)}
+.stat-pill strong{color:var(--accent);font-weight:500}
+
+.btn{cursor:pointer;font-family:'DM Sans',sans-serif;border-radius:5px;transition:all .18s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff;border:none;padding:6px 13px;font-size:12px;font-weight:600}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--tm);padding:5px 11px;font-size:12px}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-inline{background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);transition:opacity .15s;padding:0}
+.btn-inline:hover{opacity:.7}
+.btn-gold{background:var(--gold-bg);border:1px solid var(--gold-b);color:var(--gold);padding:6px 13px;font-size:12px;font-weight:600}
+.btn-gold:hover{opacity:.85}
+.btn-warn{background:rgba(79,142,247,0.15);border:1px solid var(--blue-b);color:var(--blue);padding:6px 13px;font-size:12px;font-weight:600}
+.btn-warn:hover{opacity:.85}
+
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.active{display:flex}
+
+/* ──────────────────────────────────────────────────────────
+   SIDEBAR (shared)
+────────────────────────────────────────────────────────── */
+.sidebar{width:248px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:10px 10px 8px;border-bottom:1px solid var(--border)}
+.sb-search{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;outline:none;border-radius:4px}
+.sb-search::placeholder{color:var(--ts)}
+.sb-search:focus{border-color:var(--border2)}
+.sb-heading{padding:9px 12px 4px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);display:flex;justify-content:space-between;align-items:center}
+.sb-count{background:var(--s2);border:1px solid var(--border);color:var(--ts);font-size:9px;padding:1px 6px;border-radius:10px}
+.sb-list{flex:1;overflow-y:auto;padding:4px 8px 12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+.org-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:5px;cursor:pointer;transition:background .12s}
+.org-row:hover{background:var(--s2)}
+.org-row.active{background:var(--blue-bg)}
+.org-row.active .org-row-name{color:var(--blue)}
+.org-av{width:28px;height:28px;border-radius:5px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:12px;color:var(--adim);flex-shrink:0;font-style:italic}
+.org-row.active .org-av{background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue)}
+.org-row-info{flex:1;min-width:0}
+.org-row-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-row-meta{font-size:10px;color:var(--ts)}
+.tbadge{font-family:'DM Mono',monospace;font-size:8px;padding:2px 5px;border-radius:3px;flex-shrink:0;text-transform:uppercase}
+.tbadge-target{background:var(--blue-bg);color:var(--blue)}
+.tbadge-client{background:var(--warm-bg);color:var(--warm)}
+
+/* ──────────────────────────────────────────────────────────
+   ORG MAP PAGE (existing)
+────────────────────────────────────────────────────────── */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.org-hdr{padding:14px 22px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:13px;flex-shrink:0}
+.org-hdr-av{width:40px;height:40px;border-radius:9px;background:var(--blue-bg);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:18px;color:var(--blue);font-style:italic;flex-shrink:0}
+.org-hdr-info{flex:1}
+.org-hdr-name{font-family:'Instrument Serif',serif;font-size:20px;line-height:1.1}
+.org-hdr-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-top:2px}
+.org-hdr-tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.tag{font-family:'DM Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid var(--border);color:var(--ts);letter-spacing:.05em}
+.org-hdr-stats{display:flex;gap:18px;margin-top:8px}
+.stat-n{font-family:'Instrument Serif',serif;font-size:17px;line-height:1}
+.stat-l{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-top:1px}
+.org-hdr-actions{display:flex;gap:6px;flex-shrink:0;padding-top:2px}
+
+.org-area{flex:1;overflow:auto;padding:22px 26px 40px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);white-space:nowrap}
+.sec-line{flex:1;height:1px;background:var(--border)}
+
+.exec-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.exec-card{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 12px;cursor:pointer;transition:all .18s;min-width:180px}
+.exec-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.exec-card.s-warm{border-left:3px solid var(--warm)}
+.exec-card.s-contacted{border-left:3px solid var(--cont)}
+.edot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.en{font-size:12px;font-weight:500}
+.et{font-size:10px;color:var(--ts);margin-top:1px}
+
+.hm-groups{display:flex;flex-direction:column;gap:18px}
+.hm-group{display:flex;align-items:flex-start;gap:0}
+.hm-card{width:210px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .18s;position:relative}
+.hm-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.28)}
+.hm-card.s-warm{border-left:3px solid var(--warm)}
+.hm-card.s-contacted{border-left:3px solid var(--cont)}
+.hm-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:5px;opacity:.85}
+.connector{width:28px;flex-shrink:0;position:relative;align-self:stretch;display:flex;align-items:center}
+.connector::before{content:'';position:absolute;left:0;top:50%;width:100%;height:1px;background:var(--border)}
+.team-col{flex:1;display:flex;flex-direction:column;gap:8px;position:relative}
+.team-col::before{content:'';position:absolute;left:-1px;top:16px;bottom:16px;width:1px;background:var(--border)}
+.team-item{display:flex;align-items:center;gap:0}
+.team-stub{width:16px;height:1px;background:var(--border);flex-shrink:0}
+.team-card{width:196px;background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;cursor:pointer;transition:all .18s;position:relative;flex-shrink:0}
+.team-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 5px 14px rgba(0,0,0,.22)}
+.team-card.s-warm{border-left:3px solid var(--warm)}
+.team-card.s-contacted{border-left:3px solid var(--cont)}
+
+.ndot{position:absolute;top:9px;right:9px;width:6px;height:6px;border-radius:50%}
+.d-warm{background:var(--warm)}
+.d-contacted{background:var(--cont)}
+.d-cold{background:var(--ts);opacity:.5}
+.n-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;padding-right:14px}
+.n-role{font-size:10px;color:var(--ts);margin-top:1px;line-height:1.4}
+.n-snippet{font-size:10px;color:var(--ts);margin-top:5px;line-height:1.4;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+.n-footer{display:flex;align-items:center;justify-content:space-between;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+.n-date{font-family:'DM Mono',monospace;font-size:8px;color:var(--ts)}
+.n-icons{display:flex;gap:3px}
+.ni{width:12px;height:12px;opacity:.25;color:var(--ts)}
+.ni.lit{opacity:1;color:var(--blue)}
+
+.add-team-btn{width:196px;padding:7px 0;background:none;border:1px dashed var(--border);border-radius:7px;color:var(--ts);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .18s}
+.add-team-btn:hover{border-color:var(--blue-b);color:var(--blue);background:var(--blue-bg)}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;text-align:center}
+.empty-icon{width:48px;height:48px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+
+/* ──────────────────────────────────────────────────────────
+   CANDIDATES PAGE
+────────────────────────────────────────────────────────── */
+.cand-page{flex:1;display:flex;overflow:hidden}
+
+.cand-sidebar{width:300px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.cand-sb-top{padding:12px 12px 10px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.cand-search{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;outline:none;border-radius:4px}
+.cand-search::placeholder{color:var(--ts)}
+.cand-search:focus{border-color:var(--border2)}
+.cand-add-btns{display:flex;gap:6px}
+.cand-add-btns .btn{flex:1;text-align:center;font-size:11px;padding:6px 0}
+
+.cand-sb-list{flex:1;overflow-y:auto;padding:6px 8px 12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+.cand-row{display:flex;align-items:center;gap:9px;padding:8px 8px;border-radius:6px;cursor:pointer;transition:background .12s;position:relative}
+.cand-row:hover{background:var(--s2)}
+.cand-row.active{background:var(--purple-bg)}
+.cand-row.active .cand-row-name{color:var(--purple)}
+.cand-av{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:13px;color:var(--adim);flex-shrink:0;font-style:italic}
+.cand-row.active .cand-av{background:var(--purple-bg);border-color:var(--purple-b);color:var(--purple)}
+.cand-row-info{flex:1;min-width:0}
+.cand-row-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cand-row-meta{font-size:10px;color:var(--ts);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.match-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+.cand-detail{flex:1;overflow-y:auto;padding:0;scrollbar-width:thin;scrollbar-color:var(--border) transparent;display:flex;flex-direction:column}
+
+.cand-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;text-align:center;color:var(--ts)}
+
+/* candidate profile */
+.cand-profile-hdr{padding:20px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;flex-shrink:0}
+.cand-profile-av{width:48px;height:48px;border-radius:50%;background:var(--purple-bg);border:1px solid var(--purple-b);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:20px;color:var(--purple);font-style:italic;flex-shrink:0}
+.cand-profile-info{flex:1}
+.cand-profile-name{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.1}
+.cand-profile-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-top:3px}
+.cand-profile-actions{display:flex;gap:7px;flex-shrink:0;padding-top:3px}
+
+.cand-profile-body{padding:20px 28px;flex:1}
+.profile-section{margin-bottom:22px}
+.profile-section-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.profile-section-title .sec-line{flex:1;height:1px;background:var(--border)}
+
+/* skill chips */
+.skill-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.skill-chip{font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border-radius:4px;border:1px solid var(--border);color:var(--tm);background:var(--s2);cursor:default;transition:all .15s}
+.skill-chip.core{border-color:var(--purple-b);color:var(--purple);background:var(--purple-bg)}
+.skill-chip.match{border-color:var(--gold-b);color:var(--gold);background:var(--gold-bg)}
+.skill-chip.deletable{cursor:pointer}
+.skill-chip.deletable:hover{opacity:.7;border-color:var(--border2)}
+
+/* add skill inline */
+.skill-add-wrap{display:flex;gap:6px;margin-top:8px}
+.skill-add-input{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:4px 8px;outline:none;border-radius:4px;width:160px;transition:border-color .18s}
+.skill-add-input:focus{border-color:var(--purple-b)}
+.skill-add-input::placeholder{color:var(--ts)}
+
+/* ai upload zone */
+.upload-zone{border:1px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.upload-zone:hover{border-color:var(--blue-b);background:var(--blue-bg)}
+.upload-zone.dragover{border-color:var(--blue);background:var(--blue-bg)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:22px;margin-bottom:6px}
+.upload-text{font-size:12px;color:var(--ts);line-height:1.6}
+.upload-text strong{color:var(--blue)}
+
+/* ai processing indicator */
+.ai-processing{display:flex;align-items:center;gap:10px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:7px;padding:10px 14px;font-size:12px;color:var(--blue)}
+.ai-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse .8s infinite;margin:0 1px}
+.ai-dots span:nth-child(2){animation-delay:.2s}
+.ai-dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.3}40%{opacity:1}}
+
+/* contact info rows */
+.info-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.info-row:last-child{border-bottom:none}
+.info-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);width:80px;flex-shrink:0}
+.info-val{color:var(--text);flex:1}
+.info-val a{color:var(--blue);text-decoration:none}
+.info-val a:hover{text-decoration:underline}
+.info-input{background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;flex:1;padding:2px 4px;transition:border-color .18s}
+.info-input:focus{border-color:var(--blue)}
+.info-input::placeholder{color:var(--ts)}
+
+/* ──────────────────────────────────────────────────────────
+   MATCH FEED PAGE
+────────────────────────────────────────────────────────── */
+.match-page{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.match-hdr{padding:16px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.match-hdr-title{font-family:'Instrument Serif',serif;font-size:20px}
+.match-hdr-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-top:2px}
+.match-filters{display:flex;gap:6px}
+.mfbtn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--border);color:var(--ts);padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .15s}
+.mfbtn:hover{color:var(--tm)}
+.mfbtn.active{background:var(--gold-bg);border-color:var(--gold-b);color:var(--gold)}
+
+.match-body{flex:1;overflow-y:auto;padding:20px 24px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;display:flex;flex-direction:column;gap:12px}
+
+.match-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px 18px;transition:all .18s}
+.match-card:hover{border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.22)}
+.match-card.status-new{border-left:3px solid var(--gold)}
+.match-card.status-signaled{border-left:3px solid var(--warm)}
+.match-card.status-sent{border-left:3px solid var(--blue);opacity:.7}
+
+.match-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px}
+.match-score-ring{width:44px;height:44px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
+.match-score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.match-score-num{font-family:'Instrument Serif',serif;font-size:15px;color:var(--gold);z-index:1}
+
+.match-people{flex:1;display:flex;gap:12px;align-items:center}
+.match-person{flex:1;min-width:0}
+.match-person-name{font-size:13px;font-weight:500}
+.match-person-role{font-size:11px;color:var(--ts);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.match-person-org{font-size:10px;color:var(--ts);margin-top:1px}
+.match-arrow{color:var(--ts);font-size:18px;flex-shrink:0;margin-top:2px}
+
+.match-skill-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.match-skill{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid var(--gold-b);color:var(--gold);background:var(--gold-bg)}
+
+.match-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.match-status-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-right:auto}
+.match-status-lbl.new{color:var(--gold)}
+.match-status-lbl.signaled{color:var(--warm)}
+.match-status-lbl.sent{color:var(--blue)}
+
+/* sendout prompt */
+.sendout-banner{background:var(--gold-bg);border:1px solid var(--gold-b);border-radius:8px;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0;margin:0 24px 0}
+.sendout-icon{font-size:20px;flex-shrink:0}
+.sendout-text{flex:1;font-size:12px;line-height:1.6}
+.sendout-text strong{color:var(--gold)}
+.sendout-text .sendout-names{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);margin-top:3px}
+
+/* ──────────────────────────────────────────────────────────
+   SHARED DETAIL PANEL (org map contacts)
+────────────────────────────────────────────────────────── */
+.dp{position:fixed;right:-430px;top:52px;width:420px;height:calc(100vh - 52px);background:var(--surface);border-left:1px solid var(--border);z-index:200;transition:right .3s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
+.dp.open{right:0}
+.dp-hdr{padding:16px 16px 13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.dp-close{background:none;border:1px solid var(--border);color:var(--ts);width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.dp-close:hover{border-color:var(--border2);color:var(--text)}
+.dp-name{font-family:'Instrument Serif',serif;font-size:19px;line-height:1.2}
+.dp-title{font-size:11px;color:var(--ts);margin-top:2px}
+.dp-body{flex:1;overflow-y:auto;padding:14px 16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.dp-sec{margin-bottom:14px}
+.dp-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ts);margin-bottom:4px;display:block}
+.dp-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 9px;outline:none;border-radius:4px;resize:none;transition:border-color .18s}
+.dp-input:focus{border-color:var(--blue)}
+.dp-input::placeholder{color:var(--ts)}
+.status-row{display:flex;gap:5px}
+.sbt{flex:1;padding:5px 0;border-radius:4px;border:1px solid var(--border);background:none;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.06em;cursor:pointer;transition:all .18s;color:var(--ts);text-transform:uppercase}
+.sbt.aw{background:var(--warm-bg);border-color:var(--warm-b);color:var(--warm)}
+.sbt.ac{background:var(--cont-bg);border-color:var(--cont-b);color:var(--cont)}
+.sbt.ak{background:rgba(86,105,128,.1);border-color:var(--border2);color:var(--tm)}
+.dp-link{display:block;margin-top:4px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);text-decoration:none;border-bottom:1px solid var(--blue-b);padding-bottom:1px;width:fit-content}
+.dp-footer{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0}
+.dp-footer .btn-primary{flex:1;text-align:center}
+
+/* HM skills in dp */
+.hm-skill-section{margin-top:6px}
+.hm-skill-hint{font-size:11px;color:var(--ts);margin-bottom:6px;line-height:1.5}
+
+/* ──────────────────────────────────────────────────────────
+   MODALS
+────────────────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(8,12,20,.82);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:22px;width:480px;max-width:92vw;transform:translateY(12px) scale(.98);transition:transform .26s cubic-bezier(.16,1,.3,1)}
+.overlay.open .modal{transform:none}
+.modal.wide{width:560px}
+.m-title{font-family:'Instrument Serif',serif;font-size:19px;margin-bottom:14px}
+.m-field{margin-bottom:10px}
+.m-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ts);margin-bottom:4px;display:block}
+.m-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 9px;outline:none;border-radius:4px;transition:border-color .18s}
+.m-input:focus{border-color:var(--blue)}
+.m-input::placeholder{color:var(--ts)}
+.m-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.m-footer{display:flex;gap:7px;justify-content:flex-end;margin-top:14px}
+.type-row{display:flex;gap:6px}
+.tybtn{flex:1;padding:6px 0;border-radius:4px;border:1px solid var(--border);background:none;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;cursor:pointer;transition:all .15s;color:var(--ts);text-align:center;text-transform:uppercase}
+.tybtn.sel-target{background:var(--blue-bg);border-color:var(--blue-b);color:var(--blue)}
+.tybtn.sel-client{background:var(--warm-bg);border-color:var(--warm-b);color:var(--warm)}
+
+/* sendout modal */
+.sendout-modal .m-title{color:var(--gold)}
+.sendout-fields{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px;margin-bottom:12px}
+.sendout-pair{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.sendout-pair .pair-card{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.sendout-pair .pair-name{font-size:12px;font-weight:500}
+.sendout-pair .pair-role{font-size:10px;color:var(--ts);margin-top:1px}
+.sendout-arrow{color:var(--gold);font-size:16px;flex-shrink:0}
+.sendout-skills-matched{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.sendout-note-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ts);margin-bottom:5px;display:block}
+textarea.m-input{resize:none}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <circle cx="3" cy="3" r="2" fill="white" opacity=".9"/>
+        <circle cx="13" cy="3" r="2" fill="white" opacity=".9"/>
+        <circle cx="3" cy="13" r="2" fill="white" opacity=".9"/>
+        <circle cx="13" cy="13" r="2" fill="white" opacity=".9"/>
+        <line x1="3" y1="3" x2="13" y2="3" stroke="white" stroke-width="1" opacity=".45"/>
+        <line x1="3" y1="3" x2="3" y2="13" stroke="white" stroke-width="1" opacity=".45"/>
+        <line x1="13" y1="3" x2="13" y2="13" stroke="white" stroke-width="1" opacity=".45"/>
+        <line x1="3" y1="13" x2="13" y2="13" stroke="white" stroke-width="1" opacity=".45"/>
+        <line x1="3" y1="3" x2="13" y2="13" stroke="white" stroke-width="1" opacity=".2"/>
+      </svg>
+    </div>
+    <span class="logo-text">Mappr</span>
+  </div>
+  <div class="divider"></div>
+  <div class="nav-tabs">
+    <button class="ntab active" onclick="switchPage('map',this)">Org Map</button>
+    <button class="ntab" onclick="switchPage('candidates',this)">Candidates <span class="badge" id="cand-count-badge">0</span></button>
+    <button class="ntab match-tab" onclick="switchPage('matches',this)">Match Feed <span class="badge" id="match-count-badge">0</span></button>
+  </div>
+  <div class="topbar-right">
+    <div class="stat-pill"><strong id="s-orgs">0</strong>&nbsp;orgs</div>
+    <div class="stat-pill"><strong id="s-contacts">0</strong>&nbsp;contacts</div>
+    <div class="stat-pill"><span style="width:5px;height:5px;border-radius:50%;background:var(--warm);display:inline-block;margin-right:2px;"></span><strong id="s-warm">0</strong>&nbsp;warm</div>
+    <div class="divider"></div>
+    <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file-input').click()" title="Load a saved Mappr file">↑ Import</button>
+    <button class="btn btn-primary btn-sm" onclick="exportData()" title="Save your data as a .json file">↓ Save</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:12px;padding:9px 18px;border-radius:20px;z-index:999;opacity:0;transition:all .3s;pointer-events:none;font-family:'DM Mono',monospace;letter-spacing:.04em;white-space:nowrap"></div>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- ── ORG MAP PAGE ── -->
+  <div class="page active" id="page-map" style="flex-direction:row">
+    <div class="sidebar">
+      <div class="sb-top">
+        <input class="sb-search" type="text" placeholder="Search organizations..." id="org-search" oninput="renderSidebar()">
+      </div>
+      <div style="display:flex;gap:4px;padding:8px 10px 6px;border-bottom:1px solid var(--border)">
+        <button class="mfbtn active" onclick="setOrgFilter('all',this)" style="flex:1">All</button>
+        <button class="mfbtn" onclick="setOrgFilter('target',this)" style="flex:1">Targets</button>
+        <button class="mfbtn" onclick="setOrgFilter('client',this)" style="flex:1">Clients</button>
+      </div>
+      <div class="sb-heading"><span>Organizations</span><span class="sb-count" id="sb-count">0</span></div>
+      <div class="sb-list" id="sb-list"></div>
+      <div style="padding:10px 10px 12px;border-top:1px solid var(--border)">
+        <button class="btn btn-primary" style="width:100%" onclick="openModal('org-modal','m-oname')">+ Add Organization</button>
+      </div>
+    </div>
+    <div class="content" id="main-content">
+      <div class="empty">
+        <div class="empty-icon">
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none">
+            <circle cx="3" cy="3" r="2" fill="var(--blue)"/><circle cx="13" cy="3" r="2" fill="var(--blue)"/>
+            <circle cx="3" cy="13" r="2" fill="var(--blue)"/><circle cx="13" cy="13" r="2" fill="var(--blue)"/>
+            <line x1="3" y1="3" x2="13" y2="3" stroke="var(--blue)" stroke-width="1" opacity=".45"/>
+            <line x1="3" y1="3" x2="3" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/>
+            <line x1="13" y1="3" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/>
+            <line x1="3" y1="13" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/>
+          </svg>
+        </div>
+        <div style="font-family:'Instrument Serif',serif;font-size:21px;color:var(--tm);font-style:italic">Select an organization</div>
+        <div style="font-size:12px;color:var(--ts);max-width:240px;line-height:1.6">Choose from the sidebar or add a new target or client to start mapping.</div>
+        <button class="btn btn-primary" onclick="openModal('org-modal','m-oname')" style="margin-top:6px">+ Add Organization</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CANDIDATES PAGE ── -->
+  <div class="page" id="page-candidates">
+    <div class="cand-page">
+      <div class="cand-sidebar">
+        <div class="cand-sb-top">
+          <input class="cand-search" type="text" placeholder="Search candidates..." id="cand-search" oninput="renderCandSidebar()">
+          <div class="cand-add-btns">
+            <button class="btn btn-primary" onclick="openCandModal()">+ Add Candidate</button>
+            <button class="btn btn-ghost" onclick="openCandUploadModal()" title="Extract skills from CV or LinkedIn PDF">⚡ AI Extract</button>
+          </div>
+        </div>
+        <div style="padding:9px 12px 4px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ts);display:flex;justify-content:space-between;align-items:center">
+          <span>Candidates</span>
+          <span class="sb-count" id="cand-sb-count">0</span>
+        </div>
+        <div class="cand-sb-list" id="cand-sb-list"></div>
+      </div>
+      <div class="cand-detail" id="cand-detail">
+        <div class="cand-empty">
+          <div style="font-size:32px;margin-bottom:4px">👤</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--tm);font-style:italic">Select a candidate</div>
+          <div style="font-size:12px;color:var(--ts);max-width:220px;line-height:1.6">Add candidates manually or upload a CV/LinkedIn PDF to auto-extract skills.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MATCH FEED PAGE ── -->
+  <div class="page" id="page-matches">
+    <div class="match-page">
+      <div class="match-hdr">
+        <div>
+          <div class="match-hdr-title">Match Feed</div>
+          <div class="match-hdr-sub">Candidate ↔ Hiring Manager skill matches</div>
+        </div>
+        <div class="match-filters">
+          <button class="mfbtn active" onclick="setMatchFilter('all',this)">All</button>
+          <button class="mfbtn" onclick="setMatchFilter('new',this)">New</button>
+          <button class="mfbtn" onclick="setMatchFilter('signaled',this)">Signaled</button>
+          <button class="mfbtn" onclick="setMatchFilter('sent',this)">Sent Out</button>
+        </div>
+      </div>
+      <div id="sendout-prompt-area"></div>
+      <div class="match-body" id="match-body"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SHARED ORG DETAIL PANEL -->
+<div class="dp" id="dp">
+  <div class="dp-hdr">
+    <div><div class="dp-name" id="dp-name">—</div><div class="dp-title" id="dp-role">—</div></div>
+    <button class="dp-close" onclick="closeDetail()">
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="dp-body">
+    <div class="dp-sec">
+      <span class="dp-lbl">Relationship Status</span>
+      <div class="status-row">
+        <button class="sbt" id="sbt-warm" onclick="setStatus('warm')">Warm</button>
+        <button class="sbt" id="sbt-contacted" onclick="setStatus('contacted')">Contacted</button>
+        <button class="sbt" id="sbt-cold" onclick="setStatus('cold')">Cold</button>
+      </div>
+    </div>
+    <div class="dp-sec" id="dp-context-sec">
+      <span class="dp-lbl" id="dp-note-lbl">Note</span>
+      <textarea class="dp-input" id="dp-context" rows="3" oninput="onDpInput()"></textarea>
+    </div>
+    <!-- HM hiring skills section (shown only for HMs) -->
+    <div class="dp-sec" id="dp-hm-skills-sec" style="display:none">
+      <span class="dp-lbl">Skills This Manager Hires For</span>
+      <div class="hm-skill-hint">These skills power the Match Feed. Add the core competencies this person consistently recruits for.</div>
+      <div class="skill-chips" id="dp-hm-skill-chips"></div>
+      <div class="skill-add-wrap" style="margin-top:8px">
+        <input class="skill-add-input" id="dp-hm-skill-input" placeholder="Add skill..." onkeydown="hmSkillKeydown(event)">
+        <button class="btn btn-ghost btn-sm" onclick="addHmSkill()">Add</button>
+      </div>
+    </div>
+    <div class="dp-sec">
+      <span class="dp-lbl">Email</span>
+      <input class="dp-input" id="dp-email" type="email" placeholder="name@company.com" oninput="onDpInput()">
+    </div>
+    <div class="dp-sec">
+      <span class="dp-lbl">Phone</span>
+      <input class="dp-input" id="dp-phone" type="tel" placeholder="+1 (212) 000-0000" oninput="onDpInput()">
+    </div>
+    <div class="dp-sec">
+      <span class="dp-lbl">LinkedIn</span>
+      <input class="dp-input" id="dp-linkedin" type="url" placeholder="linkedin.com/in/..." oninput="onDpInput()">
+      <a id="dp-li-link" href="#" target="_blank" class="dp-link" style="display:none">Open LinkedIn →</a>
+    </div>
+    <div class="dp-sec">
+      <span class="dp-lbl">Last Touchpoint</span>
+      <input class="dp-input" id="dp-touch" type="date" oninput="onDpInput()">
+    </div>
+    <div class="dp-sec" id="dp-reports-to-sec" style="display:none">
+      <span class="dp-lbl">Reports To</span>
+      <select class="dp-input" id="dp-reports-to" style="cursor:pointer">
+        <option value="">— Top level (no parent) —</option>
+      </select>
+    </div>
+    <div class="dp-sec">
+      <span class="dp-lbl">General Notes</span>
+      <textarea class="dp-input" id="dp-notes" rows="4" placeholder="Conversation history, intel, next steps..."></textarea>
+    </div>
+  </div>
+  <div class="dp-footer">
+    <button class="btn btn-ghost" onclick="deleteContact()" style="color:#ef4444;border-color:rgba(239,68,68,0.3)" title="Permanently remove this contact">Delete</button>
+    <button class="btn btn-ghost" onclick="closeDetail()" style="margin-left:auto">Cancel</button>
+    <button class="btn btn-primary" onclick="saveContact()">Save</button>
+  </div>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- ADD ORG -->
+<div class="overlay" id="org-modal" onclick="bgClose(event,'org-modal')">
+  <div class="modal">
+    <div class="m-title">Add Organization</div>
+    <div class="m-field">
+      <span class="m-lbl">Type</span>
+      <div class="type-row">
+        <button class="tybtn sel-target" onclick="selOrgType('target',this)">Target Company</button>
+        <button class="tybtn" onclick="selOrgType('client',this)">Client</button>
+      </div>
+      <input type="hidden" id="m-otype" value="target">
+    </div>
+    <div class="m-field"><span class="m-lbl">Organization Name</span><input class="m-input" id="m-oname" placeholder="e.g. Acme Corp"></div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Industry</span><input class="m-input" id="m-oind" placeholder="e.g. Cybersecurity"></div>
+      <div class="m-field"><span class="m-lbl">Location</span><input class="m-input" id="m-oloc" placeholder="e.g. New York, NY"></div>
+    </div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Company Size</span><input class="m-input" id="m-osize" placeholder="e.g. 200–500"></div>
+      <div class="m-field"><span class="m-lbl">Website</span><input class="m-input" id="m-oweb" placeholder="acme.com"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('org-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addOrg()">Add Organization</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD HM -->
+<div class="overlay" id="hm-modal" onclick="bgClose(event,'hm-modal')">
+  <div class="modal">
+    <div class="m-title">Add Hiring Manager</div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Full Name</span><input class="m-input" id="m-hmname" placeholder="Jane Smith"></div>
+      <div class="m-field"><span class="m-lbl">Title / Role</span><input class="m-input" id="m-hmtitle" placeholder="VP of Engineering, CTO, CFO..."></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">Positions Hired / Direct Reports</span><input class="m-input" id="m-hmctx" placeholder="e.g. Hires Sr. Security Engineers, AppSec, direct reports include..."></div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Email</span><input class="m-input" id="m-hmemail" placeholder="jane@company.com"></div>
+      <div class="m-field"><span class="m-lbl">Phone</span><input class="m-input" id="m-hmphone" placeholder="+1 212 000 0000"></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">LinkedIn</span><input class="m-input" id="m-hmli" placeholder="linkedin.com/in/..."></div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('hm-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addHm()">Add Hiring Manager</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD DIRECT REPORT -->
+<div class="overlay" id="tm-modal" onclick="bgClose(event,'tm-modal')">
+  <div class="modal">
+    <div class="m-title">Add Direct Report</div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Full Name</span><input class="m-input" id="m-tmname" placeholder="John Doe"></div>
+      <div class="m-field"><span class="m-lbl">Title / Role</span><input class="m-input" id="m-tmtitle" placeholder="Director, Manager, Senior Engineer..."></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">Skills / Context</span><input class="m-input" id="m-tmctx" placeholder="e.g. Python, AWS, Kubernetes — or open roles they hire for..."></div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Email</span><input class="m-input" id="m-tmemail" placeholder="john@company.com"></div>
+      <div class="m-field"><span class="m-lbl">Phone</span><input class="m-input" id="m-tmphone" placeholder="+1 212 000 0000"></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">LinkedIn</span><input class="m-input" id="m-tmli" placeholder="linkedin.com/in/..."></div>
+    <div style="margin-top:6px;padding:9px 12px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:5px;font-size:11px;color:var(--tm);line-height:1.6">
+      💡 Once added, you can add their own direct reports under them — building the hierarchy as deep as needed.
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('tm-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addChild()">Add Direct Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EXEC -->
+<div class="overlay" id="exec-modal" onclick="bgClose(event,'exec-modal')">
+  <div class="modal">
+    <div class="m-title">Add Executive Contact</div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Full Name</span><input class="m-input" id="m-exname" placeholder="Sarah Johnson"></div>
+      <div class="m-field"><span class="m-lbl">Title</span><input class="m-input" id="m-extitle" placeholder="CEO, CFO, COO, Partner..."></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">Context</span><input class="m-input" id="m-exctx" placeholder="e.g. Board sponsor, key decision maker..."></div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Email</span><input class="m-input" id="m-exemail" placeholder=""></div>
+      <div class="m-field"><span class="m-lbl">Phone</span><input class="m-input" id="m-exphone" placeholder=""></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('exec-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addExec()">Add Executive</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CANDIDATE MANUALLY -->
+<div class="overlay" id="cand-modal" onclick="bgClose(event,'cand-modal')">
+  <div class="modal">
+    <div class="m-title">Add Candidate</div>
+    <div class="m-field"><span class="m-lbl">Full Name</span><input class="m-input" id="m-cname" placeholder="Alex Rivera"></div>
+    <div class="m-field"><span class="m-lbl">Current Title</span><input class="m-input" id="m-ctitle" placeholder="Senior Security Engineer"></div>
+    <div class="m-field"><span class="m-lbl">Current / Most Recent Company</span><input class="m-input" id="m-ccompany" placeholder="Acme Corp"></div>
+    <div class="m-field"><span class="m-lbl">Core Skills (comma-separated)</span><input class="m-input" id="m-cskills" placeholder="Python, AWS, SIEM, Splunk, Kubernetes..."></div>
+    <div class="m-row">
+      <div class="m-field"><span class="m-lbl">Email</span><input class="m-input" id="m-cemail" placeholder="alex@email.com"></div>
+      <div class="m-field"><span class="m-lbl">Phone</span><input class="m-input" id="m-cphone" placeholder="+1 212 000 0000"></div>
+    </div>
+    <div class="m-field"><span class="m-lbl">LinkedIn</span><input class="m-input" id="m-clinkedin" placeholder="linkedin.com/in/..."></div>
+    <div class="m-field"><span class="m-lbl">Notes</span><textarea class="m-input" rows="2" id="m-cnotes" placeholder="Availability, compensation expectations, location..."></textarea></div>
+    <div class="m-field"><span class="m-lbl">References (comma-separated names)</span><input class="m-input" id="m-crefs" placeholder="e.g. Rachel Horne, David Park — will match or create HM profiles"></div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cand-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addCandManual()">Add Candidate</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI UPLOAD MODAL -->
+<div class="overlay" id="upload-modal" onclick="bgClose(event,'upload-modal')">
+  <div class="modal wide">
+    <div class="m-title">⚡ AI Skill Extraction</div>
+    <p style="font-size:12px;color:var(--ts);margin-bottom:14px;line-height:1.6">Upload a CV or LinkedIn profile PDF. Mappr will automatically extract name, title, company, and core skills. Review and confirm before saving.</p>
+    <div class="upload-zone" id="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+      <input type="file" accept=".pdf,.txt" onchange="handleFileSelect(event)">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text"><strong>Click to upload</strong> or drag & drop<br>CV or LinkedIn PDF export</div>
+    </div>
+    <div id="ai-processing-area" style="display:none;margin-top:12px"></div>
+    <div id="ai-result-area" style="display:none;margin-top:12px"></div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('upload-modal');resetUpload()">Cancel</button>
+      <button class="btn btn-primary" id="upload-save-btn" style="display:none" onclick="saveExtractedCandidate()">Save Candidate</button>
+    </div>
+  </div>
+</div>
+
+<!-- REFERENCE RELATIONSHIP MODAL -->
+<div class="overlay" id="ref-rel-modal" onclick="bgClose(event,'ref-rel-modal')">
+  <div class="modal">
+    <div class="m-title">Add Reference</div>
+    <p style="font-size:12px;color:var(--ts);margin-bottom:14px;line-height:1.6">How did <strong id="ref-rel-name">this person</strong> know the candidate?</p>
+    <div class="m-field">
+      <span class="m-lbl">Relationship</span>
+      <select class="m-input" id="ref-rel-select" style="cursor:pointer">
+        <option value="">— Select relationship —</option>
+        <option value="Former Manager">Former Manager</option>
+        <option value="Current Manager">Current Manager</option>
+        <option value="Former Direct Report">Former Direct Report</option>
+        <option value="Current Direct Report">Current Direct Report</option>
+        <option value="Former Peer">Former Peer</option>
+        <option value="Current Peer">Current Peer</option>
+        <option value="Client">Client</option>
+        <option value="Mentor">Mentor</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('ref-rel-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRefWithRel()">Add Reference</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD PROMPT MODAL -->
+<div class="overlay" id="lead-prompt-modal" onclick="bgClose(event,'lead-prompt-modal')">
+  <div class="modal">
+    <div id="lead-prompt-body"></div>
+  </div>
+</div>
+
+<!-- SENDOUT MODAL -->
+<div class="overlay" id="sendout-modal" onclick="bgClose(event,'sendout-modal')">
+  <div class="modal sendout-modal">
+    <div class="m-title">🚀 Complete Send Out</div>
+    <div class="sendout-fields">
+      <div class="sendout-pair" id="so-pair"></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <span class="m-lbl">Skills Matched</span>
+      <div class="sendout-skills-matched" id="so-skills"></div>
+    </div>
+    <div class="m-field">
+      <span class="sendout-note-lbl">Send Out Note / Email Draft</span>
+      <textarea class="m-input" rows="5" id="so-note" placeholder="I wanted to introduce you to..."></textarea>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-ghost" onclick="closeModal('sendout-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="completeSendOut()">Mark as Sent Out ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════
+let orgs = [
+  {
+    id:1,name:'Acme Technologies',type:'target',
+    industry:'Cybersecurity',location:'New York, NY',size:'200–500',website:'acme.com',
+    execs:[{id:10,name:'Sarah Johnson',title:'CEO',status:'cold',email:'',phone:'',linkedin:'',touchpoint:'',context:'Board sponsor for CISO search.',notes:'',skills:[]}],
+    hms:[
+      {id:100,name:'Rachel Horne',title:'CISO',status:'warm',email:'r.horne@acme.com',phone:'',linkedin:'',touchpoint:'2026-02-18',context:'Hires Sr. Security Engineers, AppSec, Cloud Security.',notes:'Met at RSA. Direct sourcing preferred.',skills:['Python','SIEM','Splunk','AWS','AppSec','Threat Intelligence','Zero Trust'],
+        children:[
+          {id:1001,name:'Tom Gallagher',title:'Sr. Security Engineer',status:'warm',email:'',phone:'',linkedin:'linkedin.com/in/tomg',touchpoint:'2026-02-25',context:'Python, SIEM, Splunk, AWS Security Hub. 6 YOE.',notes:'Strong reference for CISO.',skills:[],
+            children:[
+              {id:10011,name:'Casey Brooks',title:'Security Engineer',status:'cold',email:'',phone:'',linkedin:'',touchpoint:'',context:'Splunk, Python, 2 YOE. Reports to Tom.',notes:'',skills:[],children:[]}
+            ]},
+          {id:1002,name:'Lisa Chen',title:'Security Analyst',status:'cold',email:'',phone:'',linkedin:'',touchpoint:'',context:'SIEM, threat intel, CrowdStrike, Python.',notes:'',skills:[],children:[]}
+        ]},
+      {id:101,name:'David Park',title:'VP of Engineering',status:'contacted',email:'',phone:'+1 212 555 0102',linkedin:'linkedin.com/in/davidpark',touchpoint:'2026-01-30',context:'3 open Sr. Backend roles + 1 Staff Eng. Prefers Go/Kubernetes profiles.',notes:'Responded to LinkedIn.',skills:['Go','Kubernetes','Distributed Systems','gRPC','PostgreSQL','AWS','Docker'],
+        children:[{id:1003,name:'Priya Mehta',title:'Staff Engineer',status:'cold',email:'',phone:'',linkedin:'',touchpoint:'',context:'Go, Kubernetes, distributed systems, gRPC.',notes:'',skills:[],children:[]}]}
+    ]
+  },
+  {
+    id:2,name:'Brightfield Capital',type:'client',
+    industry:'Private Equity',location:'Chicago, IL',size:'50–200',website:'brightfieldcap.com',
+    execs:[],
+    hms:[{id:200,name:'Marcus Webb',title:'Managing Partner',status:'warm',email:'m.webb@brightfield.com',phone:'+1 312 555 0201',linkedin:'',touchpoint:'2026-02-10',context:'Retained search — Portfolio CISO. 25% fee, exclusive 90 days.',notes:'Decision maker. Shortlist by Mar 20.',skills:['CISO','Security Strategy','Governance','Risk Management','Compliance','Board Communication','Zero Trust'],
+      children:[{id:2001,name:'Sandra Lee',title:'Director of Talent',status:'warm',email:'s.lee@brightfield.com',phone:'',linkedin:'linkedin.com/in/sandraleehr',touchpoint:'2026-03-01',context:'Day-to-day TA contact.',notes:'Weekly check-in Tuesdays 10am.',skills:[],children:[]}]}]
+  }
+];
+
+let candidates = [
+  {id:9001,name:'Alex Rivera',title:'Senior Security Engineer',company:'CrowdStrike',email:'alex.r@email.com',phone:'+1 917 555 0011',linkedin:'linkedin.com/in/alexrivera',notes:'Open to CISO track. Comp: $220K base. NYC only.',skills:['Python','SIEM','Splunk','AWS','Threat Intelligence','Zero Trust','SOAR','EDR'],references:[{name:'Rachel Horne',hmId:100,title:'CISO',orgName:'Acme Technologies',relationship:'Former Manager'}],signaled:false,sentOut:false},
+  {id:9002,name:'Jordan Kim',title:'Staff Backend Engineer',company:'Datadog',email:'j.kim@email.com',phone:'',linkedin:'linkedin.com/in/jordankim',notes:'Passively looking. Prefers remote-first.',skills:['Go','Kubernetes','Distributed Systems','PostgreSQL','gRPC','AWS','Prometheus'],references:[],signaled:false,sentOut:false},
+  {id:9003,name:'Morgan Shah',title:'VP of Information Security',company:'Goldman Sachs',email:'morgan.s@email.com',phone:'+1 212 555 0099',linkedin:'linkedin.com/in/morganshah',notes:'Actively looking. 15+ YOE. Regulatory experience.',skills:['CISO','Security Strategy','Governance','Risk Management','Compliance','Board Communication','Financial Services','NIST'],references:[{name:'Marcus Webb',hmId:200,title:'Managing Partner',orgName:'Brightfield Capital',relationship:'Client'}],signaled:false,sentOut:false},
+];
+
+let matches = [];
+let activeOrgId = null;
+let activeContactId = null;
+let pendingHmId = null;
+let activeOrgFilter = 'all';
+let activeMatchFilter = 'all';
+let activeCandId = null;
+let pendingMatchId = null;
+let extractedCandData = null;
+let uid = 9900;
+
+// ════════════════════════════════════════════════
+// PAGE NAVIGATION
+// ════════════════════════════════════════════════
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  btn.classList.add('active');
+  if(page==='candidates') renderCandSidebar();
+  if(page==='matches') renderMatches();
+}
+
+// ════════════════════════════════════════════════
+// ORG MAP
+// ════════════════════════════════════════════════
+function renderSidebar() {
+  const q=(document.getElementById('org-search').value||'').toLowerCase();
+  const list=orgs.filter(o=>{
+    const fm=activeOrgFilter==='all'||o.type===activeOrgFilter;
+    const sm=o.name.toLowerCase().includes(q)||o.industry.toLowerCase().includes(q);
+    return fm&&sm;
+  });
+  document.getElementById('sb-count').textContent=list.length;
+  document.getElementById('sb-list').innerHTML=list.map(org=>{
+    const all=[...org.execs,...flatNodes(org.hms)];
+    return `<div class="org-row${org.id===activeOrgId?' active':''}" onclick="selectOrg(${org.id})">
+      <div class="org-av">${org.name[0]}</div>
+      <div class="org-row-info">
+        <div class="org-row-name">${org.name}</div>
+        <div class="org-row-meta">${all.length} contact${all.length!==1?'s':''} · ${org.industry}</div>
+      </div>
+      <span class="tbadge tbadge-${org.type}">${org.type}</span>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function setOrgFilter(t,btn){
+  activeOrgFilter=t;
+  document.querySelectorAll('#page-map .mfbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSidebar();
+}
+
+function updateStats(){
+  const all=orgs.flatMap(o=>[...o.execs,...flatNodes(o.hms)]);
+  document.getElementById('s-orgs').textContent=orgs.length;
+  document.getElementById('s-contacts').textContent=all.length;
+  document.getElementById('s-warm').textContent=all.filter(c=>c.status==='warm').length;
+  document.getElementById('cand-count-badge').textContent=candidates.length;
+  const newMatches=computeMatches().filter(m=>m.status==='new').length;
+  document.getElementById('match-count-badge').textContent=newMatches||'';
+  document.getElementById('match-count-badge').style.display=newMatches?'':'none';
+}
+
+function selectOrg(id){activeOrgId=id;renderSidebar();renderOrg();}
+
+function deleteOrg(){
+  const org=orgs.find(o=>o.id===activeOrgId);
+  if(!org)return;
+  if(!confirm(`Remove "${org.name}" and all contacts within it? This cannot be undone.`))return;
+  orgs=orgs.filter(o=>o.id!==activeOrgId);
+  activeOrgId=null;
+  document.getElementById('main-content').innerHTML=`<div class="empty">
+    <div class="empty-icon"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><circle cx="3" cy="3" r="2" fill="var(--blue)"/><circle cx="13" cy="3" r="2" fill="var(--blue)"/><circle cx="3" cy="13" r="2" fill="var(--blue)"/><circle cx="13" cy="13" r="2" fill="var(--blue)"/><line x1="3" y1="3" x2="13" y2="3" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="3" y1="3" x2="3" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="13" y1="3" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="3" y1="13" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/></svg></div>
+    <div style="font-family:'Instrument Serif',serif;font-size:21px;color:var(--tm);font-style:italic">Select an organization</div>
+    <div style="font-size:12px;color:var(--ts);max-width:240px;line-height:1.6">Choose from the sidebar or add a new target or client to start mapping.</div>
+    <button class="btn btn-primary" onclick="openModal('org-modal','m-oname')" style="margin-top:6px">+ Add Organization</button>
+  </div>`;
+  renderSidebar();computeAndCacheMatches();updateStats();
+  showToast(`✓ ${org.name} removed`);
+}
+
+function renderOrg(){
+  const org=orgs.find(o=>o.id===activeOrgId);
+  if(!org)return;
+  const all=[...org.execs,...flatNodes(org.hms)];
+  const warm=all.filter(c=>c.status==='warm').length;
+  const cont=all.filter(c=>c.status==='contacted').length;
+  document.getElementById('main-content').innerHTML=`
+    <div class="org-hdr">
+      <div class="org-hdr-av">${org.name[0]}</div>
+      <div class="org-hdr-info">
+        <div class="org-hdr-name">${org.name}</div>
+        <div class="org-hdr-sub">${org.industry} · ${org.location} · ${org.size}</div>
+        <div class="org-hdr-tags">
+          <span class="tbadge tbadge-${org.type}">${org.type}</span>
+          ${org.website?`<a href="https://${org.website}" target="_blank" class="tag" style="color:var(--blue);border-color:var(--blue-b);text-decoration:none">${org.website}</a>`:''}
+        </div>
+        <div class="org-hdr-stats">
+          <div><div class="stat-n">${all.length}</div><div class="stat-l">Contacts</div></div>
+          <div><div class="stat-n" style="color:var(--warm)">${warm}</div><div class="stat-l">Warm</div></div>
+          <div><div class="stat-n" style="color:var(--cont)">${cont}</div><div class="stat-l">Contacted</div></div>
+          <div><div class="stat-n">${org.hms.length}</div><div class="stat-l">HM Groups</div></div>
+        </div>
+      </div>
+      <div class="org-hdr-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteOrg()" style="color:#ef4444;border-color:rgba(239,68,68,0.3)">Delete Org</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('hm-modal','m-hmname')">+ Hiring Manager</button>
+      </div>
+    </div>
+    <div class="org-area">
+      ${org.execs.length>0?`
+        <div class="sec-hdr"><span class="sec-lbl">Executive</span><div class="sec-line"></div><button class="btn-inline" onclick="openModal('exec-modal','m-exname')">+ Add Exec</button></div>
+        <div class="exec-strip">${org.execs.map(e=>`
+          <div class="exec-card s-${e.status}" onclick="openDetail(${e.id})">
+            <div class="edot d-${e.status}"></div>
+            <div><div class="en">${e.name}</div><div class="et">${e.title}</div></div>
+          </div>`).join('')}</div>
+      `:`<div class="sec-hdr" style="margin-bottom:16px"><span class="sec-lbl">Executive</span><div class="sec-line"></div><button class="btn-inline" onclick="openModal('exec-modal','m-exname')">+ Add Exec</button></div>`}
+      <div class="sec-hdr"><span class="sec-lbl">Hiring Managers & Teams</span><div class="sec-line"></div><button class="btn-inline" onclick="openModal('hm-modal','m-hmname')">+ Add HM</button></div>
+      ${org.hms.length===0?`<div style="padding:32px 0;text-align:center;color:var(--ts);font-size:12px">No hiring managers yet. <button onclick="openModal('hm-modal','m-hmname')" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Add one →</button></div>`
+      :`<div class="hm-groups">${org.hms.map(hm=>renderNode(hm,0)).join('')}</div>`}
+    </div>`;
+}
+
+// ════════════════════════════════════════════════
+// TREE HELPERS
+// ════════════════════════════════════════════════
+function flatNodes(nodes){
+  // Recursively flatten a tree of nodes (hms + their children)
+  const result=[];
+  function walk(arr){arr.forEach(n=>{result.push(n);if(n.children?.length)walk(n.children);});}
+  walk(nodes);
+  return result;
+}
+
+function findNodeById(id, nodes){
+  for(const n of nodes){
+    if(n.id===id) return n;
+    if(n.children?.length){const f=findNodeById(id,n.children);if(f)return f;}
+  }
+  return null;
+}
+
+function findParentNode(id, nodes, parent=null){
+  for(const n of nodes){
+    if(n.id===id) return parent;
+    if(n.children?.length){const f=findParentNode(id,n.children,n);if(f!==undefined)return f;}
+  }
+  return undefined;
+}
+
+function isRootHm(id, org){
+  return org.hms.some(h=>h.id===id);
+}
+
+// ════════════════════════════════════════════════
+// RECURSIVE ORG CHART RENDERER
+// ════════════════════════════════════════════════
+function renderNode(node, depth=0){
+  const d=node.touchpoint?new Date(node.touchpoint).toLocaleDateString('en-US',{month:'short',day:'numeric'}):null;
+  const ics=(e,p,l)=>`
+    <svg class="ni${e?' lit':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <svg class="ni${p?' lit':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+    <svg class="ni${l?' lit':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`;
+
+  const hasChildren = node.children?.length > 0;
+  const isHmLevel  = depth === 0;  // top-level nodes get the HM card style
+  const cardClass  = isHmLevel ? 'hm-card' : 'team-card';
+  const skillsBadge= isHmLevel && node.skills?.length
+    ? `<span style="font-family:'DM Mono',monospace;font-size:8px;background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);padding:1px 5px;border-radius:8px;margin-left:4px">${node.skills.length} skills</span>` : '';
+
+  // Node card
+  const card=`
+    <div class="${cardClass} s-${node.status}" onclick="openDetail(${node.id})" style="${!isHmLevel&&node.children?.length?'border-color:var(--blue-b);':''}" >
+      <div class="ndot d-${node.status}"></div>
+      ${isHmLevel?`<div class="hm-lbl">Hiring Manager ${skillsBadge}</div>`:''}
+      ${!isHmLevel&&hasChildren?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--blue);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;opacity:.85">Manager ↓</div>`:''}
+      <div class="n-name">${node.name}</div>
+      <div class="n-role">${node.title}</div>
+      ${node.context?`<div class="n-snippet">${node.context}</div>`:''}
+      <div class="n-footer">
+        <span class="n-date">${d?`Last: ${d}`:'No touchpoint'}</span>
+        <div class="n-icons">${ics(!!node.email,!!node.phone,!!node.linkedin)}</div>
+      </div>
+    </div>`;
+
+  // Children column
+  const childrenHtml = `
+    <div class="team-col">
+      ${(node.children||[]).map(child=>`
+        <div class="team-item">
+          <div class="team-stub"></div>
+          ${renderNode(child, depth+1)}
+        </div>`).join('')}
+      <div class="team-item">
+        <div class="team-stub"></div>
+        <button class="add-team-btn" onclick="event.stopPropagation();openAddChildModal(${node.id})">+ Add Direct Report</button>
+      </div>
+    </div>`;
+
+  if(isHmLevel){
+    // Root HM: full row layout
+    return `<div class="hm-group">
+      ${card}
+      <div class="connector"></div>
+      ${childrenHtml}
+    </div>`;
+  } else {
+    // Child node: card + optional nested children
+    if(hasChildren){
+      return `<div style="display:flex;align-items:flex-start;gap:0">
+        ${card}
+        <div class="connector" style="width:20px"></div>
+        ${childrenHtml}
+      </div>`;
+    }
+    return card;
+  }
+}
+
+// ════════════════════════════════════════════════
+// DETAIL PANEL (org map contacts)
+// ════════════════════════════════════════════════
+function getContact(id){
+  const org=orgs.find(o=>o.id===activeOrgId);
+  if(!org) return null;
+  const exec=org.execs.find(e=>e.id===id);
+  if(exec) return {node:exec, isExec:true, isHm:false};
+  const inTree=findNodeById(id, org.hms);
+  if(inTree) return {node:inTree, isExec:false, isHm:isRootHm(id,org)};
+  return null;
+}
+
+function openDetail(id){
+  const found=getContact(id);
+  if(!found) return;
+  const {node,isExec,isHm}=found;
+  activeContactId=id;
+
+  document.getElementById('dp-name').textContent=node.name;
+  document.getElementById('dp-role').textContent=node.title;
+  document.getElementById('dp-email').value=node.email||'';
+  document.getElementById('dp-phone').value=node.phone||'';
+  document.getElementById('dp-linkedin').value=node.linkedin||'';
+  document.getElementById('dp-touch').value=node.touchpoint||'';
+  document.getElementById('dp-notes').value=node.notes||'';
+  document.getElementById('dp-context').value=node.context||'';
+
+  const lbl=document.getElementById('dp-note-lbl');
+  const ctx=document.getElementById('dp-context');
+  const hmSkillSec=document.getElementById('dp-hm-skills-sec');
+
+  if(isHm){
+    lbl.textContent='Positions Hired / Direct Reports';
+    ctx.placeholder='Roles this person hires for, direct reports, team structure...';
+    hmSkillSec.style.display='block';
+    renderHmSkillChips(node.skills||[]);
+  } else if(isExec){
+    lbl.textContent='Context / Note';
+    ctx.placeholder='Role, relationship, referral...';
+    hmSkillSec.style.display='none';
+  } else {
+    // mid-level node — show skills section if they have children (they manage people)
+    const hasChildren=node.children?.length>0;
+    lbl.textContent= hasChildren ? 'Positions Hired / Direct Reports' : 'Skills & Technologies';
+    ctx.placeholder= hasChildren ? 'Roles this person hires for...' : 'Skills, stack, YOE...';
+    hmSkillSec.style.display= hasChildren ? 'block' : 'none';
+    if(hasChildren) renderHmSkillChips(node.skills||[]);
+  }
+
+  const reportsToSec = document.getElementById('dp-reports-to-sec');
+  const reportsToSel = document.getElementById('dp-reports-to');
+
+  if(isExec){
+    reportsToSec.style.display='none';
+  } else {
+    reportsToSec.style.display='block';
+    // Build list of all nodes in this org except the node itself and its own descendants
+    const org = orgs.find(o=>o.id===activeOrgId);
+    const allNodes = flatNodes(org.hms).filter(n=>n.id!==id && !isDescendant(id, n, org));
+    reportsToSel.innerHTML = '<option value="">— Top level (no parent) —</option>' +
+      allNodes.map(n=>`<option value="${n.id}">${n.name} · ${n.title}</option>`).join('');
+    // Set current parent
+    const currentParent = findParentNode(id, org.hms);
+    reportsToSel.value = currentParent ? currentParent.id : '';
+  }
+
+  const liLink=document.getElementById('dp-li-link');
+  if(node.linkedin){liLink.href=node.linkedin.startsWith('http')?node.linkedin:'https://'+node.linkedin;liLink.style.display='block';}
+  else liLink.style.display='none';
+
+  ['warm','contacted','cold'].forEach(s=>{
+    const b=document.getElementById(`sbt-${s}`);b.className='sbt';
+    if(node.status===s)b.classList.add(s==='warm'?'aw':s==='contacted'?'ac':'ak');
+  });
+  document.getElementById('dp').classList.add('open');
+}
+
+function renderHmSkillChips(skills){
+  const container=document.getElementById('dp-hm-skill-chips');
+  container.innerHTML=skills.map((s,i)=>`<span class="skill-chip deletable" onclick="removeHmSkill(${i})" title="Click to remove">${s} ×</span>`).join('');
+}
+
+function addHmSkill(){
+  const input=document.getElementById('dp-hm-skill-input');
+  const val=input.value.trim();
+  if(!val)return;
+  const found=getContact(activeContactId);
+  if(!found)return;
+  const c=found.node;
+  if(!c.skills)c.skills=[];
+  if(!c.skills.includes(val)){c.skills.push(val);renderHmSkillChips(c.skills);}
+  input.value='';
+  computeAndCacheMatches();updateStats();
+}
+
+function removeHmSkill(idx){
+  const found=getContact(activeContactId);
+  if(!found)return;
+  const c=found.node;
+  if(c.skills){c.skills.splice(idx,1);renderHmSkillChips(c.skills);}
+  computeAndCacheMatches();updateStats();
+}
+
+function hmSkillKeydown(e){if(e.key==='Enter'){e.preventDefault();addHmSkill();}}
+
+function closeDetail(){document.getElementById('dp').classList.remove('open');activeContactId=null;}
+
+function setStatus(s){
+  const found=getContact(activeContactId);
+  if(!found)return;
+  found.node.status=s;
+  ['warm','contacted','cold'].forEach(k=>{
+    const b=document.getElementById(`sbt-${k}`);b.className='sbt';
+    if(k===s)b.classList.add(k==='warm'?'aw':k==='contacted'?'ac':'ak');
+  });
+}
+
+function isDescendant(ancestorId, node, org){
+  // Returns true if ancestorId is an ancestor of node
+  function check(nodes){
+    for(const n of nodes){
+      if(n.id===ancestorId) return true;
+      if(n.children?.length && check(n.children)) return true;
+    }
+    return false;
+  }
+  // Find the ancestor node and check if node is in its subtree
+  const ancestor = findNodeById(ancestorId, org.hms);
+  if(!ancestor) return false;
+  return check(ancestor.children||[]);
+}
+
+function reparentNode(nodeId, newParentId, org){
+  // 1. Find and detach the node from its current location
+  let detached = null;
+
+  // Check if it's a root HM
+  const rootIdx = org.hms.findIndex(h=>h.id===nodeId);
+  if(rootIdx!==-1){
+    detached = org.hms.splice(rootIdx,1)[0];
+  } else {
+    // Find in tree and remove
+    function detachFromTree(nodes){
+      for(const n of nodes){
+        if(n.children){
+          const idx = n.children.findIndex(c=>c.id===nodeId);
+          if(idx!==-1){detached=n.children.splice(idx,1)[0];return true;}
+          if(detachFromTree(n.children)) return true;
+        }
+      }
+      return false;
+    }
+    detachFromTree(org.hms);
+  }
+
+  if(!detached) return;
+
+  // 2. Attach to new parent (or root if no parent selected)
+  if(!newParentId){
+    org.hms.push(detached);
+  } else {
+    const newParent = findNodeById(newParentId, org.hms);
+    if(newParent){
+      if(!newParent.children) newParent.children=[];
+      newParent.children.push(detached);
+    }
+  }
+}
+
+function saveContact(){
+  const found=getContact(activeContactId);
+  if(!found)return;
+  const {node, isExec} = found;
+  node.email=document.getElementById('dp-email').value;
+  node.phone=document.getElementById('dp-phone').value;
+  node.linkedin=document.getElementById('dp-linkedin').value;
+  node.touchpoint=document.getElementById('dp-touch').value;
+  node.notes=document.getElementById('dp-notes').value;
+  node.context=document.getElementById('dp-context').value;
+
+  // Handle reparenting if Reports To changed
+  if(!isExec){
+    const org = orgs.find(o=>o.id===activeOrgId);
+    const newParentId = document.getElementById('dp-reports-to').value;
+    const newParentIdNum = newParentId ? parseInt(newParentId) : null;
+    const currentParent = findParentNode(activeContactId, org.hms);
+    const currentParentId = currentParent ? currentParent.id : null;
+
+    if(newParentIdNum !== currentParentId){
+      reparentNode(activeContactId, newParentIdNum, org);
+    }
+  }
+
+  closeDetail();renderOrg();renderSidebar();computeAndCacheMatches();updateStats();
+}
+
+function deleteContact(){
+  const found=getContact(activeContactId);
+  if(!found)return;
+  const {node,isExec,isHm}=found;
+  const org=orgs.find(o=>o.id===activeOrgId);
+  if(!org)return;
+
+  const label=isExec?'executive':(isHm?'hiring manager and their entire reporting tree':'contact');
+  if(!confirm(`Remove ${node.name}? ${isHm?'This will also remove everyone reporting to them. ':''}This cannot be undone.`))return;
+
+  if(isExec){
+    org.execs=org.execs.filter(e=>e.id!==activeContactId);
+  } else if(isHm){
+    // Remove the root HM and entire subtree
+    org.hms=org.hms.filter(h=>h.id!==activeContactId);
+  } else {
+    // Node is somewhere in the tree — find parent and remove from its children
+    function removeFromTree(nodes){
+      for(let i=0;i<nodes.length;i++){
+        if(nodes[i].children){
+          const idx=nodes[i].children.findIndex(c=>c.id===activeContactId);
+          if(idx!==-1){nodes[i].children.splice(idx,1);return true;}
+          if(removeFromTree(nodes[i].children))return true;
+        }
+      }
+      return false;
+    }
+    removeFromTree(org.hms);
+  }
+
+  // Also unlink any candidate references pointing to this contact
+  candidates.forEach(cand=>{
+    if(cand.references){
+      cand.references=cand.references.filter(r=>r.hmId!==activeContactId);
+    }
+  });
+
+  closeDetail();
+  renderOrg();
+  renderSidebar();
+  computeAndCacheMatches();
+  updateStats();
+  showToast(`✓ ${node.name} removed`);
+}
+
+// ════════════════════════════════════════════════
+// CANDIDATES
+// ════════════════════════════════════════════════
+function renderCandSidebar(){
+  const q=(document.getElementById('cand-search').value||'').toLowerCase();
+  const list=candidates.filter(c=>c.name.toLowerCase().includes(q)||c.title.toLowerCase().includes(q)||(c.company||'').toLowerCase().includes(q));
+  document.getElementById('cand-sb-count').textContent=list.length;
+  const ms=computeMatches();
+  document.getElementById('cand-sb-list').innerHTML=list.map(c=>{
+    const hasMatch=ms.some(m=>m.candidateId===c.id&&m.status==='new');
+    return `<div class="cand-row${c.id===activeCandId?' active':''}" onclick="selectCand(${c.id})">
+      <div class="cand-av">${c.name[0]}</div>
+      <div class="cand-row-info">
+        <div class="cand-row-name">${c.name}</div>
+        <div class="cand-row-meta">${c.title}${c.company?' · '+c.company:''}</div>
+      </div>
+      ${hasMatch?`<div class="match-dot" title="New match available"></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectCand(id){activeCandId=id;renderCandProfile();}
+
+function renderCandProfile(){
+  const c=candidates.find(x=>x.id===activeCandId);
+  if(!c)return;
+  const ms=computeMatches().filter(m=>m.candidateId===c.id&&m.status==='new');
+  document.getElementById('cand-detail').innerHTML=`
+    <div class="cand-profile-hdr">
+      <div class="cand-profile-av">${c.name[0]}</div>
+      <div class="cand-profile-info">
+        <div class="cand-profile-name">${c.name}</div>
+        <div class="cand-profile-sub">${c.title}${c.company?' · '+c.company:''}</div>
+      </div>
+      <div class="cand-profile-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteCand(${c.id})">Remove</button>
+      </div>
+    </div>
+    <div class="cand-profile-body">
+
+      ${ms.length>0?`
+        <div class="profile-section">
+          <div class="profile-section-title"><span>🎯 Potential Matches</span><div class="sec-line"></div></div>
+          ${ms.map(m=>`
+            <div style="background:var(--gold-bg);border:1px solid var(--gold-b);border-radius:7px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:500;color:var(--gold)">${m.hmName}</div>
+                <div style="font-size:10px;color:var(--ts);margin-top:1px">${m.hmTitle} · ${m.orgName}</div>
+                <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">${m.matchedSkills.slice(0,4).map(s=>`<span class="skill-chip match">${s}</span>`).join('')}${m.matchedSkills.length>4?`<span style="font-size:10px;color:var(--ts)">+${m.matchedSkills.length-4} more</span>`:''}</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--gold)">${m.score}%</div>
+                <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--ts);margin-bottom:6px">match</div>
+                <button class="btn btn-gold btn-sm" onclick="openSendout('${m.id}')">Send Out →</button>
+              </div>
+            </div>`).join('')}
+        </div>`:''}
+
+      <div class="profile-section">
+        <div class="profile-section-title"><span>Core Skills</span><div class="sec-line"></div></div>
+        <div class="skill-chips" id="cand-skill-chips-${c.id}">
+          ${c.skills.map((s,i)=>`<span class="skill-chip core deletable" onclick="removeCandSkill(${c.id},${i})" title="Click to remove">${s} ×</span>`).join('')}
+        </div>
+        <div class="skill-add-wrap">
+          <input class="skill-add-input" id="cand-skill-input-${c.id}" placeholder="Add skill..." onkeydown="candSkillKeydown(event,${c.id})">
+          <button class="btn btn-ghost btn-sm" onclick="addCandSkill(${c.id})">Add</button>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title"><span>Contact</span><div class="sec-line"></div></div>
+        <div class="info-row"><span class="info-lbl">Email</span><input class="info-input" value="${c.email}" onblur="saveCandField(${c.id},'email',this.value)" placeholder="—"></div>
+        <div class="info-row"><span class="info-lbl">Phone</span><input class="info-input" value="${c.phone}" onblur="saveCandField(${c.id},'phone',this.value)" placeholder="—"></div>
+        <div class="info-row"><span class="info-lbl">LinkedIn</span>${c.linkedin?`<a href="${c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin}" target="_blank" class="info-val">${c.linkedin}</a>`:''}<input class="info-input" value="${c.linkedin}" onblur="saveCandField(${c.id},'linkedin',this.value)" placeholder="linkedin.com/in/..." style="${c.linkedin?'display:none':''}"></div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title"><span>Notes</span><div class="sec-line"></div></div>
+        <textarea class="dp-input" rows="4" onblur="saveCandField(${c.id},'notes',this.value)" placeholder="Availability, comp expectations, location pref, status...">${c.notes}</textarea>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-title"><span>References</span><div class="sec-line"></div></div>
+        <div style="font-size:11px;color:var(--ts);margin-bottom:10px;line-height:1.6">People who know this candidate. Link to existing HM profiles or create new ones.</div>
+        <div id="cand-refs-list-${c.id}" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+          ${(c.references||[]).map((ref,i)=>renderRefRow(ref,c.id,i)).join('')}
+        </div>
+        <div style="display:flex;gap:6px;position:relative">
+          <input class="skill-add-input" id="ref-input-${c.id}" placeholder="Type a name to search or add..." oninput="refInputChange(${c.id})" onkeydown="refKeydown(event,${c.id})" autocomplete="off" style="flex:1;width:auto">
+          <button class="btn btn-ghost btn-sm" onclick="commitRefInput(${c.id})">Add</button>
+          <div id="ref-dropdown-${c.id}" style="display:none;position:absolute;top:100%;left:0;right:40px;background:var(--surface);border:1px solid var(--border);border-radius:5px;z-index:100;margin-top:3px;overflow:hidden"></div>
+        </div>
+      </div>
+
+    </div>`;
+}
+
+function addCandSkill(candId){
+  const input=document.getElementById(`cand-skill-input-${candId}`);
+  if(!input)return;
+  const val=input.value.trim();
+  if(!val)return;
+  const c=candidates.find(x=>x.id===candId);
+  if(c&&!c.skills.includes(val)){c.skills.push(val);}
+  input.value='';
+  renderCandProfile();computeAndCacheMatches();updateStats();renderCandSidebar();
+}
+
+function removeCandSkill(candId,idx){
+  const c=candidates.find(x=>x.id===candId);
+  if(c){c.skills.splice(idx,1);renderCandProfile();computeAndCacheMatches();updateStats();}
+}
+
+function candSkillKeydown(e,id){if(e.key==='Enter'){e.preventDefault();addCandSkill(id);}}
+
+function saveCandField(id,field,val){
+  const c=candidates.find(x=>x.id===id);
+  if(c)c[field]=val;
+}
+
+function deleteCand(id){
+  candidates=candidates.filter(c=>c.id!==id);
+  activeCandId=null;
+  document.getElementById('cand-detail').innerHTML=`<div class="cand-empty"><div style="font-size:32px">👤</div><div style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--tm);font-style:italic">Select a candidate</div></div>`;
+  renderCandSidebar();computeAndCacheMatches();updateStats();
+}
+
+function openCandModal(){openModal('cand-modal','m-cname');}
+
+function addCandManual(){
+  const name=document.getElementById('m-cname').value.trim();
+  if(!name)return;
+  const rawSkills=document.getElementById('m-cskills').value;
+  const skills=rawSkills.split(',').map(s=>s.trim()).filter(Boolean);
+
+  // Process references from modal — match against existing HMs
+  const rawRefs=document.getElementById('m-crefs').value;
+  const refNames=rawRefs.split(',').map(s=>s.trim()).filter(Boolean);
+  const allHms=orgs.flatMap(o=>o.hms.map(h=>({...h,orgName:o.name})));
+  const references=refNames.map(rname=>{
+    const match=allHms.find(h=>h.name.toLowerCase()===rname.toLowerCase());
+    return match?{name:match.name,hmId:match.id,title:match.title,orgName:match.orgName}:{name:rname,hmId:null,title:'',orgName:''};
+  });
+
+  candidates.push({
+    id:uid++,name,
+    title:document.getElementById('m-ctitle').value.trim()||'—',
+    company:document.getElementById('m-ccompany').value.trim(),
+    email:document.getElementById('m-cemail').value.trim(),
+    phone:document.getElementById('m-cphone').value.trim(),
+    linkedin:document.getElementById('m-clinkedin').value.trim(),
+    notes:document.getElementById('m-cnotes').value.trim(),
+    skills,references,signaled:false,sentOut:false
+  });
+  clearInputs('m-cname','m-ctitle','m-ccompany','m-cskills','m-cemail','m-cphone','m-clinkedin','m-cnotes','m-crefs');
+  closeModal('cand-modal');
+  renderCandSidebar();computeAndCacheMatches();updateStats();
+}
+
+// ════════════════════════════════════════════════
+// REFERENCES
+// ════════════════════════════════════════════════
+function renderRefRow(ref, candId, idx) {
+  const isLinked = !!ref.hmId;
+  const relLabel = ref.relationship ? `<span style="font-family:'DM Mono',monospace;font-size:8px;padding:1px 6px;border-radius:3px;background:var(--s2);border:1px solid var(--border);color:var(--ts);margin-left:6px">${ref.relationship}</span>` : '';
+  return `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:var(--bg);border:1px solid ${isLinked?'var(--blue-b)':'var(--border)'};border-radius:5px">
+    <div style="width:7px;height:7px;border-radius:50%;background:${isLinked?'var(--blue)':'var(--ts)'};flex-shrink:0;margin-top:4px"></div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+        <div style="font-size:12px;font-weight:500">${ref.name}</div>
+        ${relLabel}
+      </div>
+      ${ref.title||ref.orgName?`<div style="font-size:10px;color:var(--ts);margin-top:2px">${[ref.title,ref.orgName].filter(Boolean).join(' · ')}</div>`:''}
+      ${isLinked
+        ? `<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--blue);margin-top:4px;letter-spacing:.06em">✓ LINKED TO ORG MAP</div>`
+        : `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="promptAddRefToOrg(${candId},${idx})" style="background:var(--blue-bg);border:1px solid var(--blue-b);color:var(--blue);font-family:'DM Mono',monospace;font-size:8px;cursor:pointer;letter-spacing:.06em;padding:3px 8px;border-radius:3px">+ ADD TO EXISTING ORG</button>
+            <button onclick="promptCreateOrgFromRef(${candId},${idx})" style="background:none;border:1px solid var(--border);color:var(--ts);font-family:'DM Mono',monospace;font-size:8px;cursor:pointer;letter-spacing:.06em;padding:3px 8px;border-radius:3px">+ CREATE NEW ORG</button>
+          </div>`
+      }
+    </div>
+    <button onclick="removeRef(${candId},${idx})" style="background:none;border:none;color:var(--ts);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;flex-shrink:0" title="Remove">×</button>
+  </div>`;
+}
+
+function refInputChange(candId) {
+  const input = document.getElementById(`ref-input-${candId}`);
+  const dropdown = document.getElementById(`ref-dropdown-${candId}`);
+  const q = (input.value||'').toLowerCase().trim();
+  if(!q) { dropdown.style.display='none'; return; }
+
+  // Search all HMs across all orgs
+  const allHms = orgs.flatMap(org => org.hms.map(hm => ({...hm, orgName:org.name})));
+  const matches = allHms.filter(hm => hm.name.toLowerCase().includes(q));
+
+  const rows = matches.map(hm => `
+    <div onclick="selectRefHm(${candId},${hm.id})" style="padding:8px 12px;cursor:pointer;transition:background .12s;font-size:12px" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+      <div style="font-weight:500">${hm.name}</div>
+      <div style="font-size:10px;color:var(--ts);margin-top:1px">${hm.title} · ${hm.orgName}</div>
+    </div>`).join('');
+
+  const createRow = `<div onclick="selectRefNew(${candId})" style="padding:8px 12px;cursor:pointer;border-top:${matches.length?'1px solid var(--border)':'none'};transition:background .12s;font-size:12px;color:var(--blue)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+    <span style="font-family:'DM Mono',monospace;font-size:9px">+ Create new HM profile for "<strong>${input.value}</strong>"</span>
+  </div>`;
+
+  dropdown.innerHTML = rows + createRow;
+  dropdown.style.display = 'block';
+}
+
+function selectRefHm(candId, hmId) {
+  const hm = orgs.flatMap(o=>o.hms.map(h=>({...h,orgName:o.name}))).find(h=>h.id===hmId);
+  if(!hm) return;
+  const input = document.getElementById(`ref-input-${candId}`);
+  document.getElementById(`ref-dropdown-${candId}`).style.display='none';
+  input.value='';
+  pendingRefData = { candId, ref:{ name:hm.name, hmId:hm.id, title:hm.title, orgName:hm.orgName, relationship:'' }};
+  openRefRelModal();
+}
+
+function selectRefNew(candId) {
+  const input = document.getElementById(`ref-input-${candId}`);
+  const name = input.value.trim();
+  if(!name) return;
+  document.getElementById(`ref-dropdown-${candId}`).style.display='none';
+  input.value='';
+  pendingRefData = { candId, ref:{ name, hmId:null, title:'', orgName:'', relationship:'' }};
+  openRefRelModal();
+}
+
+function commitRefInput(candId) {
+  const input = document.getElementById(`ref-input-${candId}`);
+  const name = input.value.trim();
+  if(!name) return;
+  document.getElementById(`ref-dropdown-${candId}`).style.display='none';
+  const allHms = orgs.flatMap(o=>o.hms.map(h=>({...h,orgName:o.name})));
+  const exact = allHms.find(h=>h.name.toLowerCase()===name.toLowerCase());
+  pendingRefData = exact
+    ? { candId, ref:{ name:exact.name, hmId:exact.id, title:exact.title, orgName:exact.orgName, relationship:'' }}
+    : { candId, ref:{ name, hmId:null, title:'', orgName:'', relationship:'' }};
+  input.value='';
+  openRefRelModal();
+}
+
+// ── Relationship modal ──
+let pendingRefData = null;
+
+function openRefRelModal(){
+  const el = document.getElementById('ref-rel-modal');
+  const nameEl = document.getElementById('ref-rel-name');
+  if(pendingRefData) nameEl.textContent = pendingRefData.ref.name;
+  document.getElementById('ref-rel-select').value = '';
+  el.classList.add('open');
+}
+
+function saveRefWithRel(){
+  if(!pendingRefData) return;
+  const rel = document.getElementById('ref-rel-select').value;
+  pendingRefData.ref.relationship = rel;
+  addRef(pendingRefData.candId, pendingRefData.ref);
+  closeModal('ref-rel-modal');
+  pendingRefData = null;
+}
+
+// ── Lead prompts for unlinked refs ──
+function promptAddRefToOrg(candId, refIdx){
+  const c = candidates.find(x=>x.id===candId);
+  if(!c||!c.references) return;
+  const ref = c.references[refIdx];
+  if(!ref) return;
+
+  // Build org selector
+  const orgList = orgs.map(o=>`<div onclick="linkRefToOrg(${candId},${refIdx},${o.id})" style="padding:9px 14px;cursor:pointer;font-size:12px;transition:background .12s;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+    <div style="width:26px;height:26px;border-radius:5px;background:var(--blue-bg);border:1px solid var(--blue-b);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:11px;color:var(--blue);flex-shrink:0">${o.name[0]}</div>
+    <div><div style="font-weight:500">${o.name}</div><div style="font-size:10px;color:var(--ts)">${o.industry} · ${o.type}</div></div>
+  </div>`).join('');
+
+  document.getElementById('lead-prompt-body').innerHTML = `
+    <div style="font-size:13px;color:var(--text);margin-bottom:14px">Which org does <strong>${ref.name}</strong> belong to?</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px">${orgList}</div>`;
+  document.getElementById('lead-prompt-modal').classList.add('open');
+  window._pendingLeadRef = {candId, refIdx};
+}
+
+function linkRefToOrg(candId, refIdx, orgId){
+  const c = candidates.find(x=>x.id===candId);
+  if(!c||!c.references) return;
+  const ref = c.references[refIdx];
+  const org = orgs.find(o=>o.id===orgId);
+  if(!ref||!org) return;
+
+  // Add as HM in that org
+  const newHm = {id:uid++, name:ref.name, title:ref.title||'—', status:'cold', email:'', phone:'', linkedin:'', touchpoint:'', context:`Reference for ${c.name}`, notes:'', skills:[], children:[]};
+  org.hms.push(newHm);
+  ref.hmId = newHm.id;
+  ref.orgName = org.name;
+
+  closeModal('lead-prompt-modal');
+  const list = document.getElementById(`cand-refs-list-${candId}`);
+  if(list) list.innerHTML = c.references.map((r,i)=>renderRefRow(r,candId,i)).join('');
+  renderSidebar(); computeAndCacheMatches(); updateStats();
+  showToast(`✓ ${ref.name} added to ${org.name}`);
+}
+
+function promptCreateOrgFromRef(candId, refIdx){
+  const c = candidates.find(x=>x.id===candId);
+  if(!c||!c.references) return;
+  const ref = c.references[refIdx];
+
+  document.getElementById('lead-prompt-body').innerHTML = `
+    <div style="font-size:13px;color:var(--text);margin-bottom:14px">Create a new organization for <strong>${ref.name}</strong></div>
+    <div class="m-field" style="margin-bottom:8px">
+      <span class="m-lbl">Organization Name</span>
+      <input class="m-input" id="lead-org-name" placeholder="e.g. Acme Corp" style="margin-top:4px">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="m-field">
+        <span class="m-lbl">Industry</span>
+        <input class="m-input" id="lead-org-ind" placeholder="e.g. Financial Services" style="margin-top:4px">
+      </div>
+      <div class="m-field">
+        <span class="m-lbl">Type</span>
+        <select class="m-input" id="lead-org-type" style="margin-top:4px;cursor:pointer">
+          <option value="target">Target</option>
+          <option value="client">Client</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-field" style="margin-bottom:0">
+      <span class="m-lbl">Ref's Title at this Org</span>
+      <input class="m-input" id="lead-ref-title" placeholder="e.g. CISO, VP of Security" value="${ref.title||''}" style="margin-top:4px">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('lead-prompt-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="createOrgFromRef(${candId},${refIdx})">Create Org & Link</button>
+    </div>`;
+  document.getElementById('lead-prompt-modal').classList.add('open');
+}
+
+function createOrgFromRef(candId, refIdx){
+  const c = candidates.find(x=>x.id===candId);
+  if(!c||!c.references) return;
+  const ref = c.references[refIdx];
+  const orgName = document.getElementById('lead-org-name').value.trim();
+  if(!orgName){ showToast('✗ Please enter an org name', true); return; }
+
+  const newOrg = {
+    id:uid++, name:orgName,
+    type: document.getElementById('lead-org-type').value,
+    industry: document.getElementById('lead-org-ind').value.trim()||'—',
+    location:'—', size:'—', website:'', execs:[], hms:[]
+  };
+  const refTitle = document.getElementById('lead-ref-title').value.trim()||ref.title||'—';
+  const newHm = {id:uid++, name:ref.name, title:refTitle, status:'cold', email:'', phone:'', linkedin:'', touchpoint:'', context:`Reference for ${c.name}`, notes:'', skills:[], children:[]};
+  newOrg.hms.push(newHm);
+  orgs.push(newOrg);
+
+  ref.hmId = newHm.id;
+  ref.orgName = newOrg.name;
+  ref.title = refTitle;
+
+  closeModal('lead-prompt-modal');
+  const list = document.getElementById(`cand-refs-list-${candId}`);
+  if(list) list.innerHTML = c.references.map((r,i)=>renderRefRow(r,candId,i)).join('');
+  renderSidebar(); computeAndCacheMatches(); updateStats();
+  showToast(`✓ ${newOrg.name} added to your map`);
+}
+
+function refKeydown(e, candId) {
+  if(e.key==='Enter'){e.preventDefault();commitRefInput(candId);}
+  if(e.key==='Escape') document.getElementById(`ref-dropdown-${candId}`).style.display='none';
+}
+
+function addRef(candId, ref) {
+  const c = candidates.find(x=>x.id===candId);
+  if(!c) return;
+  if(!c.references) c.references=[];
+  // Don't add duplicates
+  if(c.references.some(r=>r.name.toLowerCase()===ref.name.toLowerCase())) return;
+  c.references.push(ref);
+  // Re-render just the refs list
+  const list = document.getElementById(`cand-refs-list-${candId}`);
+  if(list) list.innerHTML = c.references.map((r,i)=>renderRefRow(r,candId,i)).join('');
+}
+
+function removeRef(candId, idx) {
+  const c = candidates.find(x=>x.id===candId);
+  if(!c||!c.references) return;
+  c.references.splice(idx,1);
+  const list = document.getElementById(`cand-refs-list-${candId}`);
+  if(list) list.innerHTML = c.references.map((r,i)=>renderRefRow(r,candId,i)).join('');
+}
+
+// Close ref dropdowns on outside click
+document.addEventListener('click', e => {
+  document.querySelectorAll('[id^="ref-dropdown-"]').forEach(d => {
+    if(!d.contains(e.target) && !e.target.id?.startsWith('ref-input-')) d.style.display='none';
+  });
+});
+
+// ════════════════════════════════════════════════
+// AI UPLOAD / SKILL EXTRACTION
+// ════════════════════════════════════════════════
+function openCandUploadModal(){openModal('upload-modal',null);}
+
+function handleDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('dragover');}
+function handleDragLeave(){document.getElementById('upload-zone').classList.remove('dragover');}
+function handleDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f)processUploadedFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)processUploadedFile(f);}
+
+async function processUploadedFile(file){
+  const proc=document.getElementById('ai-processing-area');
+  const result=document.getElementById('ai-result-area');
+  const saveBtn=document.getElementById('upload-save-btn');
+  proc.style.display='block';result.style.display='none';saveBtn.style.display='none';
+  proc.innerHTML=`<div class="ai-processing"><div class="ai-dots"><span></span><span></span><span></span></div><span>Extracting skills from ${file.name}…</span></div>`;
+
+  // Read file content
+  let textContent='';
+  try{
+    if(file.type==='application/pdf'||file.name.endsWith('.pdf')){
+      // For PDFs, we'll send base64 to Claude
+      textContent=await readFileAsBase64(file);
+    } else {
+      textContent=await readFileAsText(file);
+    }
+  }catch(e){
+    proc.innerHTML=`<div style="color:red;font-size:12px">Could not read file. Please try a .txt or .pdf file.</div>`;
+    return;
+  }
+
+  // Call Claude API
+  try{
+    const isPdf=file.type==='application/pdf'||file.name.endsWith('.pdf');
+    const messages=isPdf?[{role:'user',content:[
+      {type:'document',source:{type:'base64',media_type:'application/pdf',data:textContent}},
+      {type:'text',text:'Extract candidate information from this CV or LinkedIn profile. Return ONLY valid JSON with these fields: {"name":"","title":"","company":"","skills":[],"email":"","linkedin":""}. Skills should be specific technologies, tools, frameworks, and competencies (not soft skills). Include up to 20 most relevant skills.'}
+    ]}]:[{role:'user',content:`Extract candidate information from this CV or LinkedIn profile text. Return ONLY valid JSON with these fields: {"name":"","title":"","company":"","skills":[],"email":"","linkedin":""}. Skills should be specific technologies, tools, and competencies. Include up to 20 most relevant skills.\n\n${textContent}`}];
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':'MAPPR_API_KEY_PLACEHOLDER',
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1000,messages})
+    });
+    const data=await resp.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    const json=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(json);
+    extractedCandData=parsed;
+    showExtractResult(parsed);
+  }catch(err){
+    proc.innerHTML=`<div style="color:var(--cont);font-size:12px;padding:10px;background:var(--cont-bg);border:1px solid var(--cont-b);border-radius:6px">Could not extract skills automatically. Please add the candidate manually.</div>`;
+  }
+}
+
+function readFileAsBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
+function readFileAsText(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(file);});}
+
+function showExtractResult(data){
+  const proc=document.getElementById('ai-processing-area');
+  const result=document.getElementById('ai-result-area');
+  const saveBtn=document.getElementById('upload-save-btn');
+  proc.style.display='none';
+  result.style.display='block';
+  saveBtn.style.display='block';
+  result.innerHTML=`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--warm);margin-bottom:10px">✓ Extracted Successfully</div>
+      <div style="margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500">${data.name||'Unknown'}</div>
+        <div style="font-size:11px;color:var(--ts);margin-top:1px">${data.title||''}${data.company?' · '+data.company:''}</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--ts);margin-bottom:6px">Skills Detected</div>
+      <div class="skill-chips">${(data.skills||[]).map(s=>`<span class="skill-chip core">${s}</span>`).join('')}</div>
+      ${data.email?`<div style="margin-top:8px;font-size:11px;color:var(--ts)">📧 ${data.email}</div>`:''}
+    </div>`;
+}
+
+function saveExtractedCandidate(){
+  if(!extractedCandData)return;
+  const d=extractedCandData;
+  candidates.push({id:uid++,name:d.name||'Unknown',title:d.title||'—',company:d.company||'',email:d.email||'',phone:'',linkedin:d.linkedin||'',notes:'',skills:d.skills||[],signaled:false,sentOut:false});
+  closeModal('upload-modal');resetUpload();
+  renderCandSidebar();computeAndCacheMatches();updateStats();
+}
+
+function resetUpload(){
+  extractedCandData=null;
+  document.getElementById('ai-processing-area').style.display='none';
+  document.getElementById('ai-result-area').style.display='none';
+  document.getElementById('upload-save-btn').style.display='none';
+}
+
+// ════════════════════════════════════════════════
+// MATCH ENGINE
+// ════════════════════════════════════════════════
+function computeMatches(){
+  const result=[];
+  const allHms=orgs.flatMap(org=>flatNodes(org.hms).map(n=>({...n,orgName:org.name,orgId:org.id})));
+  for(const hm of allHms){
+    if(!hm.skills||hm.skills.length===0)continue;
+    const hmSkillsLower=hm.skills.map(s=>s.toLowerCase());
+    for(const cand of candidates){
+      if(!cand.skills||cand.skills.length===0)continue;
+      const matched=cand.skills.filter(s=>hmSkillsLower.includes(s.toLowerCase()));
+      if(matched.length===0)continue;
+      const score=Math.round((matched.length/hm.skills.length)*100);
+      if(score<20)continue; // threshold
+      const matchId=`${hm.id}-${cand.id}`;
+      const existing=matches.find(m=>m.id===matchId);
+      result.push({
+        id:matchId,
+        candidateId:cand.id,candidateName:cand.name,candidateTitle:cand.title,candidateCompany:cand.company,
+        hmId:hm.id,hmName:hm.name,hmTitle:hm.title,orgName:hm.orgName,orgId:hm.orgId,
+        matchedSkills:matched,score:Math.min(score,99),
+        status:existing?existing.status:'new'
+      });
+    }
+  }
+  return result.sort((a,b)=>b.score-a.score);
+}
+
+function computeAndCacheMatches(){
+  const fresh=computeMatches();
+  // Preserve status from existing matches
+  matches=fresh.map(m=>{
+    const old=matches.find(x=>x.id===m.id);
+    return old?{...m,status:old.status}:m;
+  });
+}
+
+function renderMatches(){
+  computeAndCacheMatches();
+  const list=activeMatchFilter==='all'?matches:matches.filter(m=>m.status===activeMatchFilter);
+
+  const signaled=matches.filter(m=>m.status==='signaled');
+  const promptArea=document.getElementById('sendout-prompt-area');
+  if(signaled.length>0){
+    promptArea.innerHTML=`<div class="sendout-banner" style="margin-top:16px;margin-bottom:0">
+      <div class="sendout-icon">🚀</div>
+      <div class="sendout-text">
+        <strong>${signaled.length} match${signaled.length>1?'es are':'is'} ready for send out.</strong><br>
+        <div class="sendout-names">${signaled.map(m=>`${m.candidateName} → ${m.hmName} (${m.orgName})`).join(' · ')}</div>
+      </div>
+      <button class="btn btn-gold" onclick="openSendout('${signaled[0].id}')">Complete Send Out →</button>
+    </div>`;
+  } else promptArea.innerHTML='';
+
+  if(list.length===0){
+    document.getElementById('match-body').innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ts)">
+      <div style="font-size:36px;margin-bottom:12px">🎯</div>
+      <div style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--tm);font-style:italic;margin-bottom:6px">No matches yet</div>
+      <div style="font-size:12px;line-height:1.7">Add skills to hiring managers in the Org Map tab,<br>and add candidates with their skill sets to generate matches.</div>
+    </div>`;
+    return;
+  }
+
+  document.getElementById('match-body').innerHTML=list.map(m=>{
+    const statusLabel={new:'New Match',signaled:'Both Sides Signaled',sent:'Sent Out'}[m.status];
+    const statusClass={new:'new',signaled:'signaled',sent:'sent'}[m.status];
+    const circum=2*Math.PI*18;
+    const dash=circum*(m.score/100);
+    return `<div class="match-card status-${statusClass}">
+      <div class="match-top">
+        <div class="match-score-ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="3"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="${dash} ${circum}" stroke-linecap="round"/>
+          </svg>
+          <span class="match-score-num">${m.score}</span>
+        </div>
+        <div class="match-people">
+          <div class="match-person">
+            <div class="match-person-name">${m.candidateName}</div>
+            <div class="match-person-role">${m.candidateTitle}</div>
+            <div class="match-person-org">${m.candidateCompany||'—'}</div>
+          </div>
+          <div class="match-arrow">→</div>
+          <div class="match-person">
+            <div class="match-person-name">${m.hmName}</div>
+            <div class="match-person-role">${m.hmTitle}</div>
+            <div class="match-person-org">${m.orgName}</div>
+          </div>
+        </div>
+      </div>
+      <div class="match-skill-row">${m.matchedSkills.map(s=>`<span class="match-skill">${s}</span>`).join('')}</div>
+      <div class="match-actions">
+        <span class="match-status-lbl ${statusClass}">${statusLabel}</span>
+        ${m.status==='new'?`<button class="btn btn-ghost btn-sm" onclick="signalMatch('${m.id}')">Mark as Signaled</button><button class="btn btn-warn btn-sm" onclick="openSendout('${m.id}')">Send Out →</button>`:''}
+        ${m.status==='signaled'?`<button class="btn btn-gold btn-sm" onclick="openSendout('${m.id}')">🚀 Complete Send Out</button>`:''}
+        ${m.status==='sent'?`<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--ts)">Completed</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function setMatchFilter(f,btn){
+  activeMatchFilter=f;
+  document.querySelectorAll('.match-filters .mfbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMatches();
+}
+
+function signalMatch(id){
+  computeAndCacheMatches();
+  const m=matches.find(x=>x.id===id);
+  if(m)m.status='signaled';
+  renderMatches();
+  updateStats();
+}
+
+function openSendout(matchId){
+  computeAndCacheMatches();
+  pendingMatchId=matchId;
+  const m=matches.find(x=>x.id===matchId);
+  if(!m)return;
+  document.getElementById('so-pair').innerHTML=`
+    <div class="pair-card"><div class="pair-name">${m.candidateName}</div><div class="pair-role">${m.candidateTitle}</div></div>
+    <div class="sendout-arrow">→</div>
+    <div class="pair-card"><div class="pair-name">${m.hmName}</div><div class="pair-role">${m.hmTitle} · ${m.orgName}</div></div>`;
+  document.getElementById('so-skills').innerHTML=m.matchedSkills.map(s=>`<span class="match-skill">${s}</span>`).join('');
+  document.getElementById('so-note').value=`Hi ${m.hmName},\n\nI wanted to introduce you to ${m.candidateName}, a ${m.candidateTitle} with strong experience in ${m.matchedSkills.slice(0,3).join(', ')}.\n\nI think there could be a strong fit given your current search. Happy to set up a call.\n\nBest,`;
+  openModal('sendout-modal',null);
+}
+
+function completeSendOut(){
+  const m=matches.find(x=>x.id===pendingMatchId);
+  if(m)m.status='sent';
+  closeModal('sendout-modal');
+  renderMatches();updateStats();
+  if(activeCandId)renderCandProfile();
+}
+
+// ════════════════════════════════════════════════
+// MODALS & HELPERS
+// ════════════════════════════════════════════════
+function openModal(id,focusId){document.getElementById(id).classList.add('open');if(focusId)setTimeout(()=>document.getElementById(focusId).focus(),80);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function bgClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+function selOrgType(t,btn){
+  document.getElementById('m-otype').value=t;
+  document.querySelectorAll('#org-modal .tybtn').forEach(b=>b.className='tybtn');
+  btn.classList.add(`sel-${t}`);
+}
+function clearInputs(...ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});}
+
+function addOrg(){
+  const name=document.getElementById('m-oname').value.trim();
+  if(!name)return;
+  orgs.push({id:uid++,name,type:document.getElementById('m-otype').value,industry:document.getElementById('m-oind').value.trim()||'—',location:document.getElementById('m-oloc').value.trim()||'—',size:document.getElementById('m-osize').value.trim()||'—',website:document.getElementById('m-oweb').value.trim(),execs:[],hms:[]});
+  clearInputs('m-oname','m-oind','m-oloc','m-osize','m-oweb');
+  closeModal('org-modal');renderSidebar();
+}
+
+function addHm(){
+  const name=document.getElementById('m-hmname').value.trim();
+  if(!name||!activeOrgId)return;
+  const org=orgs.find(o=>o.id===activeOrgId);
+  org.hms.push({id:uid++,name,title:document.getElementById('m-hmtitle').value.trim()||'—',status:'cold',email:document.getElementById('m-hmemail').value.trim(),phone:document.getElementById('m-hmphone').value.trim(),linkedin:document.getElementById('m-hmli').value.trim(),touchpoint:'',context:document.getElementById('m-hmctx').value.trim(),notes:'',skills:[],children:[]});
+  clearInputs('m-hmname','m-hmtitle','m-hmctx','m-hmemail','m-hmphone','m-hmli');
+  closeModal('hm-modal');renderOrg();renderSidebar();computeAndCacheMatches();updateStats();
+}
+
+function openAddChildModal(parentId){
+  pendingHmId=parentId;
+  // Update modal title to show who we're adding under
+  const org=orgs.find(o=>o.id===activeOrgId);
+  const parent=findNodeById(parentId,org.hms);
+  const titleEl=document.querySelector('#tm-modal .m-title');
+  if(titleEl&&parent) titleEl.textContent=`Add Direct Report to ${parent.name}`;
+  openModal('tm-modal','m-tmname');
+}
+
+function addChild(){
+  const name=document.getElementById('m-tmname').value.trim();
+  if(!name||!activeOrgId||pendingHmId===null)return;
+  const org=orgs.find(o=>o.id===activeOrgId);
+  const parent=findNodeById(pendingHmId,org.hms);
+  if(!parent)return;
+  if(!parent.children) parent.children=[];
+  parent.children.push({
+    id:uid++,name,
+    title:document.getElementById('m-tmtitle').value.trim()||'—',
+    status:'cold',
+    email:document.getElementById('m-tmemail').value.trim(),
+    phone:document.getElementById('m-tmphone').value.trim(),
+    linkedin:document.getElementById('m-tmli').value.trim(),
+    touchpoint:'',
+    context:document.getElementById('m-tmctx').value.trim(),
+    notes:'',skills:[],children:[]
+  });
+  // Reset modal title
+  const titleEl=document.querySelector('#tm-modal .m-title');
+  if(titleEl) titleEl.textContent='Add Direct Report';
+  clearInputs('m-tmname','m-tmtitle','m-tmctx','m-tmemail','m-tmphone','m-tmli');
+  pendingHmId=null;
+  closeModal('tm-modal');renderOrg();renderSidebar();computeAndCacheMatches();updateStats();
+}
+
+function addExec(){
+  const name=document.getElementById('m-exname').value.trim();
+  if(!name||!activeOrgId)return;
+  const org=orgs.find(o=>o.id===activeOrgId);
+  org.execs.push({id:uid++,name,title:document.getElementById('m-extitle').value.trim()||'—',status:'cold',email:document.getElementById('m-exemail').value.trim(),phone:document.getElementById('m-exphone').value.trim(),linkedin:'',touchpoint:'',context:document.getElementById('m-exctx').value.trim(),notes:'',skills:[]});
+  clearInputs('m-exname','m-extitle','m-exctx','m-exemail','m-exphone');
+  closeModal('exec-modal');renderOrg();renderSidebar();
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['org-modal','hm-modal','tm-modal','exec-modal','cand-modal','sendout-modal','ref-rel-modal','lead-prompt-modal'].forEach(closeModal);closeDetail();}});
+
+// ════════════════════════════════════════════════
+// EXPORT / IMPORT / AUTOSAVE
+// ════════════════════════════════════════════════
+const STORAGE_KEY = 'mappr_data_v1';
+
+function showToast(msg, isError=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.borderColor=isError?'var(--cont-b)':'var(--warm-b)';
+  t.style.color=isError?'var(--cont)':'var(--warm)';
+  t.style.opacity='1';
+  t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>{
+    t.style.opacity='0';
+    t.style.transform='translateX(-50%) translateY(12px)';
+  }, 2800);
+}
+
+function getSnapshot(){
+  return JSON.stringify({
+    version:1,
+    savedAt: new Date().toISOString(),
+    orgs,
+    candidates,
+    matches,
+    uid
+  }, null, 2);
+}
+
+function exportData(){
+  const snap = getSnapshot();
+  const date = new Date().toISOString().slice(0,10);
+  const blob = new Blob([snap], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `mappr-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  autoSave();
+  showToast('✓ Saved to mappr-' + date + '.json');
+}
+
+function handleImportFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      loadSnapshot(ev.target.result);
+      showToast('✓ Loaded ' + file.name);
+    } catch(err) {
+      showToast('✗ Could not read file — invalid format', true);
+    }
+  };
+  reader.readAsText(file);
+  // Reset input so same file can be re-imported
+  e.target.value='';
+}
+
+function loadSnapshot(jsonStr){
+  const data = JSON.parse(jsonStr);
+  if(!data.orgs || !data.candidates) throw new Error('Invalid snapshot');
+  orgs       = data.orgs;
+  candidates = data.candidates;
+  matches    = data.matches || [];
+  uid        = data.uid    || 9900;
+  activeOrgId = null;
+  activeCandId = null;
+  // Reset org map view
+  document.getElementById('main-content').innerHTML=`<div class="empty">
+    <div class="empty-icon"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><circle cx="3" cy="3" r="2" fill="var(--blue)"/><circle cx="13" cy="3" r="2" fill="var(--blue)"/><circle cx="3" cy="13" r="2" fill="var(--blue)"/><circle cx="13" cy="13" r="2" fill="var(--blue)"/><line x1="3" y1="3" x2="13" y2="3" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="3" y1="3" x2="3" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="13" y1="3" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/><line x1="3" y1="13" x2="13" y2="13" stroke="var(--blue)" stroke-width="1" opacity=".45"/></svg></div>
+    <div style="font-family:'Instrument Serif',serif;font-size:21px;color:var(--tm);font-style:italic">Select an organization</div>
+    <div style="font-size:12px;color:var(--ts);max-width:240px;line-height:1.6">Data loaded. Choose an org from the sidebar.</div>
+  </div>`;
+  computeAndCacheMatches();
+  renderSidebar();
+  renderCandSidebar();
+  updateStats();
+  autoSave();
+}
+
+function autoSave(){
+  try {
+    localStorage.setItem(STORAGE_KEY, getSnapshot());
+  } catch(e) {
+    // localStorage full or unavailable — silent fail
+  }
+}
+
+function loadFromLocalStorage(){
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved){
+      loadSnapshot(saved);
+      // Subtle indicator that data was restored
+      showToast('✓ Restored from last session');
+    }
+  } catch(e) {
+    // No saved data or parse error — start fresh with demo data
+  }
+}
+
+// Auto-save whenever data changes — hook into existing refresh functions
+const _origRenderSidebar = renderSidebar;
+renderSidebar = function(){ _origRenderSidebar(); autoSave(); };
+
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+loadFromLocalStorage(); // loads saved data if it exists, else falls through to demo data
+computeAndCacheMatches();
+renderSidebar();
+updateStats();
+</script>
+</body>
+</html>
